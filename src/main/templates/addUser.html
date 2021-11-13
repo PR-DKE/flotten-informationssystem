@@ -1,0 +1,9 @@
+{% extends "admin-base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+{{super()}}
+<div>
+    {{ wtf.quick_form(form)}}
+</div>
+{% endblock %}
