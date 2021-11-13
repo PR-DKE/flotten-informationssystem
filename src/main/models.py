@@ -51,11 +51,11 @@ class Waggon(db.Model):
 
 
 class Triebwagen(Waggon):
-    zugkraft = db.Column(db.Integer)
+    zugkraft = db.Column(db.DECIMAL)
 
 class Personenwaggon(Waggon):
     sitzanzahl = db.Column(db.Integer)
-    maxGewicht = db.Column(db.Integer)
+    maxGewicht = db.Column(db.DECIMAL)
 
 
 

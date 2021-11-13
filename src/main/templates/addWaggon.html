@@ -1,0 +1,15 @@
+{% extends "admin-base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+{{super()}}
+<h1>Add Triebwagen</h1>
+<div>
+    {{ wtf.quick_form(form)}}
+</div>
+<br>
+<h1>Add Personenwaggon</h1>
+<div>
+    {{ wtf.quick_form(form2)}}
+</div>
+{% endblock %}

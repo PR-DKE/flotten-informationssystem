@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, RadioField, DecimalField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo, ValidationError
 
-from main.models import User
+from main.models import User, Triebwagen, Waggon, Personenwaggon
 
 
 class LoginForm(FlaskForm):
@@ -26,3 +26,26 @@ class AddUserForm(FlaskForm):
         if not field.data.strip().endswith('@jku-linien.at'):
             raise ValidationError('Only company email allowed (@jku-linien.at)')
 
+class AddTriebwagenForm(FlaskForm):
+    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired()])
+    spurweite = RadioField('Spurweite (mm)', choices=[('normalspur','1435'),('schmalspur','1000')], default='normalspur')
+    zugkraft = DecimalField('Zugkraft (t)', validators=[DataRequired()])
+    submit = SubmitField('Add Waggon')
+
+    def validate_fahrgestellnummer(self, field):
+        if Triebwagen.query.filter_by(fahrgestellnummer=field.data).first() \
+                or Personenwaggon.query.filter_by(fahrgestellnummer=field.data).first():
+            raise ValidationError('Fahrgestellnummer already in use')
+
+class AddPersonenwaggonForm(FlaskForm):
+    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired()])
+    spurweite = RadioField('Spurweite (mm)', choices=[('normalspur', '1435'), ('schmalspur', '1000')],
+                           default='normalspur')
+    sitzanzahl = IntegerField('Sitzplätze', validators=[DataRequired()])
+    maxGewicht = DecimalField('Maximal-Gewicht (t)', validators=[DataRequired()])
+    submi = SubmitField('Add Waggon')
+
+    def validate_fahrgestellnummer(self, field):
+        if Triebwagen.query.filter_by(fahrgestellnummer=field.data).first() \
+                or Personenwaggon.query.filter_by(fahrgestellnummer=field.data).first():
+            raise ValidationError('Fahrgestellnummer already in use')
