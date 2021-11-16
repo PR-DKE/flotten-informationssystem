@@ -2,7 +2,60 @@
 
 {% block content %}
 {{super()}}
-<div>
-    /admin working!
+
+<h1>Waggons</h1>
+<hr>
+<h2>Triebwagen</h2>
+<div class="triebwagen-table">
+    <table id="triebwagen-data" class="table table-striped" >
+        <th>Fahrgestellnummer</th>
+        <th>Spurweite</th>
+        <th>Zugkraft</th>
+        <th>Options</th>
+        {% for triebwagen in triebwaegen %}
+        <tr>
+            <td>{{ triebwagen.fahrgestellnummer }}</td>
+            <td>{{ triebwagen.spurweite }}</td>
+            <td>{{ triebwagen.zugkraft }}</td>
+            <td>
+                <form action="{{ url_for('adminLanding') }}" method="POST">
+                <input id="triebwagen" name="triebwagen" type="hidden" value="{{triebwagen.fahrgestellnummer}}">
+                <button type="submit"> Delete </button>
+            </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<br>
+<h2>Personenwaggons</h2>
+<div class="personenwaggon-table">
+    <table id="data" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Fahrgestellnummer</th>
+            <th>Spurweite</th>
+            <th>Maximalgewicht</th>
+            <th>Sitzanzahl</th>
+            <th>Options</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for personenwaggon in personenwaggons %}
+        <tr>
+            <td>{{ personenwaggon.fahrgestellnummer }}</td>
+            <td>{{ personenwaggon.spurweite }}</td>
+            <td>{{ personenwaggon.maxGewicht }}</td>
+            <td>{{ personenwaggon.sitzanzahl }}</td>
+            <td>
+                <form action="{{ url_for('adminLanding') }}" method="POST">
+                <input id="personenwaggon" name="personenwaggon" type="hidden" value="{{personenwaggon.fahrgestellnummer}}">
+                <button type="submit"> Delete </button>
+            </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

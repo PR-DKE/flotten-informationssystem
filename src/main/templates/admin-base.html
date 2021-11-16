@@ -4,6 +4,11 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block styles %}
+{{ super() }}
+{% endblock %}
+
+
 
 {% block navbar %}
 <div class="navbar navbar-inverse" role="navigation">
@@ -31,8 +36,6 @@
 
 
 {% block content %}
-
-
 {% with messages = get_flashed_messages() %}
 {% if messages %}
 <ul>
@@ -43,3 +46,10 @@
 {% endif %}
 {% endwith %}
 {% endblock %}
+
+
+{% block scripts %}
+{{ super() }}
+{% endblock %}
+
+

@@ -35,11 +35,24 @@ def logout():
     flash('You have benn logged out')
     return redirect(url_for('indexLanding'))
 
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def adminLanding():
-    return render_template("admin.html", title="Flotte- Home")
+    if request.method == 'POST':
+        if request.form.get('personenwaggon'):
+            db.session.query(Personenwaggon).filter(Personenwaggon.fahrgestellnummer == request.form.get('personenwaggon')).delete()
+            db.session.commit()
+            flash("Deleted {}".format(request.form.get('personenwaggon')))
+        if request.form.get('triebwagen'):
+            db.session.query(Triebwagen).filter(
+            Triebwagen.fahrgestellnummer == request.form.get('triebwagen')).delete()
+            db.session.commit()
+            flash("Deleted {}".format(request.form.get('triebwagen')))
+        return redirect(url_for('adminLanding'))
+    triebwagen = Triebwagen.query.all()
+    personenwaggons = Personenwaggon.query.all()
+    return render_template("admin.html", title="Flotte- Home", triebwaegen=triebwagen, personenwaggons=personenwaggons)
 
 @app.route('/admin/user', methods=['GET', 'POST'])
 @login_required
@@ -76,6 +89,7 @@ def addWaggon():
               'Zugkraft= {} '.format(form.fahrgestellnummer.data, spurweite, form.zugkraft.data))
         return redirect(url_for('addWaggon'))
     if form2.validate_on_submit():
+        spurweite = 1435
         if form2.spurweite.data == 'schmalspur':
             spurweite = 1000
         wagen = Personenwaggon(fahrgestellnummer=form2.fahrgestellnummer.data,
@@ -90,6 +104,10 @@ def addWaggon():
               'Maximal-Gewicht= {}'.format(form2.fahrgestellnummer.data, spurweite, form2.sitzanzahl.data, form2.maxGewicht.data))
         return redirect(url_for('addWaggon'))
     return render_template("addWaggon.html", form=form, form2=form2)
+
+@app.route('/admin')
+
+
 
 @app.route('/employee')
 @login_required

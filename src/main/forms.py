@@ -27,8 +27,8 @@ class AddUserForm(FlaskForm):
             raise ValidationError('Only company email allowed (@jku-linien.at)')
 
 class AddTriebwagenForm(FlaskForm):
-    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired()])
     spurweite = RadioField('Spurweite (mm)', choices=[('normalspur','1435'),('schmalspur','1000')], default='normalspur')
+    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired()])
     zugkraft = DecimalField('Zugkraft (t)', validators=[DataRequired()])
     submit = SubmitField('Add Waggon')
 
@@ -38,9 +38,9 @@ class AddTriebwagenForm(FlaskForm):
             raise ValidationError('Fahrgestellnummer already in use')
 
 class AddPersonenwaggonForm(FlaskForm):
-    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired()])
     spurweite = RadioField('Spurweite (mm)', choices=[('normalspur', '1435'), ('schmalspur', '1000')],
                            default='normalspur')
+    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired()])
     sitzanzahl = IntegerField('Sitzplätze', validators=[DataRequired()])
     maxGewicht = DecimalField('Maximal-Gewicht (t)', validators=[DataRequired()])
     submi = SubmitField('Add Waggon')
