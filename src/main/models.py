@@ -8,21 +8,13 @@ from main import db, login_manager
 def load_user(user_email):
     return User.query.get(user_email)
 
-class Role(db.Model):
-    __tablename__ = 'roles'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
-    users = db.relationship('User', backref='role', lazy='dynamic')
-
-    def __repr__(self):
-        return '<Role %r>' % self.name
 
 class User(UserMixin,db.Model):
     __tablename__='users'
 
     email = db.Column(db.String(120), primary_key=True)
     password_hash = db.Column(db.String(128))
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    is_admin = db.Column(db.Boolean)
 
     @property
     def password(self):

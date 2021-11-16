@@ -17,7 +17,7 @@ class AddUserForm(FlaskForm):
     email = StringField('E-Mail', validators=[DataRequired(), Length(1, 64)])
     password = PasswordField('Password', validators=[DataRequired(), EqualTo('password2', message='Passwords must match')])
     password2 = PasswordField('Confirm Password', validators=[DataRequired()])
-    role_id = BooleanField('Admin ?')
+    is_admin = BooleanField('Admin ?')
     submit = SubmitField('Register')
 
     def validate_email(self, field):

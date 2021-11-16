@@ -3,6 +3,8 @@ from flask_login import login_required, login_user, logout_user
 
 from main import app, db
 from flask import render_template
+
+from main.decorators import admin_required
 from main.forms import LoginForm, AddUserForm, AddTriebwagenForm, AddPersonenwaggonForm
 from main.models import User, Triebwagen, Personenwaggon
 
@@ -20,7 +22,9 @@ def indexLanding():
             login_user(user, form.remember_me.data)
             next = request.args.get('next')
             if next is None or not next.startswith('/'):
-                next = url_for('adminLanding')
+                next = url_for('empLanding')
+                if user.is_admin:
+                    next = url_for('adminLanding')
             return redirect(next)
     return render_template("index.html", form=form, title="Welcome")
 
@@ -33,20 +37,19 @@ def logout():
 
 @app.route('/admin')
 @login_required
+@admin_required
 def adminLanding():
     return render_template("admin.html", title="Flotte- Home")
 
 @app.route('/admin/user', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def addUser():
     form = AddUserForm()
     if form.validate_on_submit():
-        role = 0
-        if form.role_id.data:
-            role = 1
         user = User(email=form.email.data,
                     password=form.password.data,
-                    role_id = role)
+                    is_admin = form.is_admin.data)
         db.session.add(user)
         db.session.commit()
         flash('User {} has been registered.'.format(user.email))
@@ -55,6 +58,7 @@ def addUser():
 
 @app.route('/admin/waggon', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def addWaggon():
     form = AddTriebwagenForm()
     form2 = AddPersonenwaggonForm()
@@ -86,4 +90,12 @@ def addWaggon():
               'Maximal-Gewicht= {}'.format(form2.fahrgestellnummer.data, spurweite, form2.sitzanzahl.data, form2.maxGewicht.data))
         return redirect(url_for('addWaggon'))
     return render_template("addWaggon.html", form=form, form2=form2)
+
+@app.route('/employee')
+@login_required
+def empLanding():
+    return 'Hello, Employee'
+
+
+
 
