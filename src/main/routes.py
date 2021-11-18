@@ -43,12 +43,12 @@ def adminLanding():
         if request.form.get('personenwaggon'):
             db.session.query(Personenwaggon).filter(Personenwaggon.fahrgestellnummer == request.form.get('personenwaggon')).delete()
             db.session.commit()
-            flash("Deleted {}".format(request.form.get('personenwaggon')))
+            flash("Deleted Personenwaggon: {}".format(request.form.get('personenwaggon')))
         if request.form.get('triebwagen'):
             db.session.query(Triebwagen).filter(
             Triebwagen.fahrgestellnummer == request.form.get('triebwagen')).delete()
             db.session.commit()
-            flash("Deleted {}".format(request.form.get('triebwagen')))
+            flash("Deleted Triebwagen: {}".format(request.form.get('triebwagen')))
         return redirect(url_for('adminLanding'))
     triebwagen = Triebwagen.query.all()
     personenwaggons = Personenwaggon.query.all()

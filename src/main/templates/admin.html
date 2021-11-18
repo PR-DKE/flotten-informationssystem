@@ -5,13 +5,18 @@
 
 <h1>Waggons</h1>
 <hr>
-<h2>Triebwagen</h2>
-<div class="triebwagen-table">
-    <table id="triebwagen-data" class="table table-striped" >
-        <th>Fahrgestellnummer</th>
-        <th>Spurweite</th>
-        <th>Zugkraft</th>
-        <th>Options</th>
+<div class="personal-table">
+    <h2>Triebwagen</h2>
+    <table id="data" class="table table-striped" >
+        <thead>
+        <tr>
+            <th>Fahrgestellnummer</th>
+            <th>Spurweite</th>
+            <th>Zugkraft</th>
+            <th>Options</th>
+        </tr>
+        </thead>
+        <tbody>
         {% for triebwagen in triebwaegen %}
         <tr>
             <td>{{ triebwagen.fahrgestellnummer }}</td>
@@ -19,18 +24,19 @@
             <td>{{ triebwagen.zugkraft }}</td>
             <td>
                 <form action="{{ url_for('adminLanding') }}" method="POST">
-                <input id="triebwagen" name="triebwagen" type="hidden" value="{{triebwagen.fahrgestellnummer}}">
-                <button type="submit"> Delete </button>
-            </form>
+                    <input id="triebwagen" name="triebwagen" type="hidden" value="{{triebwagen.fahrgestellnummer}}">
+                    <button type="submit"> Delete </button>
+                </form>
             </td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
 </div>
 <br>
-<h2>Personenwaggons</h2>
-<div class="personenwaggon-table">
-    <table id="data" class="table table-striped">
+<div class="personal-table">
+    <h2>Personenwaggons</h2>
+    <table id="data2" class="table table-striped">
         <thead>
         <tr>
             <th>Fahrgestellnummer</th>
@@ -58,4 +64,15 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('#data').DataTable();
+    });
+     $(document).ready(function () {
+        $('#data2').DataTable();
+    });
+</script>
 {% endblock %}
