@@ -67,7 +67,7 @@ def addUser():
         db.session.commit()
         flash('User {} has been registered.'.format(user.email))
         return redirect(url_for('addUser'))
-    return render_template("addUser.html", form=form)
+    return render_template("addUser.html", form=form, title='Add User')
 
 @app.route('/admin/waggon', methods=['GET', 'POST'])
 @login_required
@@ -103,7 +103,7 @@ def addWaggon():
               'Sitzplätze= {} '
               'Maximal-Gewicht= {}'.format(form2.fahrgestellnummer.data, spurweite, form2.sitzanzahl.data, form2.maxGewicht.data))
         return redirect(url_for('addWaggon'))
-    return render_template("addWaggon.html", form=form, form2=form2)
+    return render_template("addWaggon.html", form=form, form2=form2, title='Add Waggons')
 
 @app.route('/admin')
 
@@ -112,7 +112,7 @@ def addWaggon():
 @app.route('/employee')
 @login_required
 def empLanding():
-    return 'Hello, Employee'
+    return render_template("employee-base.html")
 
 
 
