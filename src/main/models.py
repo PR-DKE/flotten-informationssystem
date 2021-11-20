@@ -36,6 +36,7 @@ class User(UserMixin,db.Model):
 class Waggon(db.Model):
     fahrgestellnummer = db.Column(db.String(64), primary_key=True)
     spurweite = db.Column(db.Integer, index=True)
+    is_available = db.Column(db.Boolean, default=True)
     __abstract__ = True
 
     def __repr__(self):

@@ -105,7 +105,39 @@ def addWaggon():
         return redirect(url_for('addWaggon'))
     return render_template("addWaggon.html", form=form, form2=form2, title='Add Waggons')
 
-@app.route('/admin')
+@app.route('/admin/train', methods=['POST'])
+@login_required
+@admin_required
+def train():
+    has_triebwagen = False
+    spurweite = 0
+    gewicht = 0
+    for field in request.form.items():
+        if field.__getitem__(0).__contains__('tw'):
+            if has_triebwagen:
+                flash('Error: Too many Triebwagen')
+                return redirect(url_for('adminLanding'))
+            has_triebwagen=True
+            tw = Triebwagen.query.filter_by(fahrgestellnummer=field.__getitem__(1)).first()
+            tw.is_available=False
+            spurweite=tw.spurweite
+        if field.__getitem__(0).__contains__('pw'):
+            pw = Personenwaggon.query.filter_by(fahrgestellnummer=field.__getitem__(1)).first()
+            if spurweite == 0:
+                spurweite = pw.spurweite
+            elif spurweite != pw.spurweite:
+                flash('Spurweite of Personenwaggon {} does not match'.format(pw.fahrgestellnummer))
+                return redirect(url_for('adminLanding'))
+            pw.is_available=False
+            gewicht=gewicht+pw.maxGewicht
+    if has_triebwagen==False:
+        flash('No Triebwagen has been selected')
+        return redirect(url_for('adminLanding'))
+    if gewicht > tw.zugkraft:
+        flash('Zugkraft is not sufficient')
+        return redirect(url_for('adminLanding'))
+    db.session.commit()
+    return redirect(url_for('adminLanding'))
 
 
 

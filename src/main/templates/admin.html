@@ -5,6 +5,8 @@
 
 <h1>Waggons</h1>
 <hr>
+<form action="{{url_for('train')}}" method="post">
+    <button class="btn btn-primary" type="submit" style="float: right; margin-right: 30px">Submit Train</button>
 <div class="personal-table">
     <h2>Triebwagen</h2>
     <table id="data" class="table table-striped" >
@@ -13,6 +15,8 @@
             <th>Fahrgestellnummer</th>
             <th>Spurweite</th>
             <th>Zugkraft</th>
+            <th>Available?</th>
+            <th>Select</th>
             <th>Options</th>
         </tr>
         </thead>
@@ -22,12 +26,21 @@
             <td>{{ triebwagen.fahrgestellnummer }}</td>
             <td>{{ triebwagen.spurweite }}</td>
             <td>{{ triebwagen.zugkraft }}</td>
+            <td>{{ triebwagen.is_available }}</td>
+            {% if triebwagen.is_available %}
+            <td>
+                <input type="checkbox" name="tw{{triebwagen.fahrgestellnummer}}" value={{triebwagen.fahrgestellnummer}}>
+            </td>
             <td>
                 <form action="{{ url_for('adminLanding') }}" method="POST">
                     <input id="triebwagen" name="triebwagen" type="hidden" value="{{triebwagen.fahrgestellnummer}}">
-                    <button type="submit"> Delete </button>
+                    <button type="submit" class="btn btn-secondary"> Delete </button>
                 </form>
             </td>
+            {% else %}
+            <td>-</td>
+            <td>-</td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>
@@ -43,6 +56,8 @@
             <th>Spurweite</th>
             <th>Maximalgewicht</th>
             <th>Sitzanzahl</th>
+            <th>Available?</th>
+            <th>Select</th>
             <th>Options</th>
         </tr>
         </thead>
@@ -53,17 +68,27 @@
             <td>{{ personenwaggon.spurweite }}</td>
             <td>{{ personenwaggon.maxGewicht }}</td>
             <td>{{ personenwaggon.sitzanzahl }}</td>
+            <td>{{ personenwaggon.is_available }}</td>
+            {% if personenwaggon.is_available %}
+            <td>
+                <input type="checkbox" name="pw{{personenwaggon.fahrgestellnummer}}" value={{personenwaggon.fahrgestellnummer}}>
+            </td>
             <td>
                 <form action="{{ url_for('adminLanding') }}" method="POST">
                 <input id="personenwaggon" name="personenwaggon" type="hidden" value="{{personenwaggon.fahrgestellnummer}}">
-                <button type="submit"> Delete </button>
+                <button class="btn btn-secondary" type="submit"> Delete </button>
             </form>
             </td>
+            {% else %}
+            <td>-</td>
+            <td>-</td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
+</form>
 {% endblock %}
 
 {% block scripts %}
