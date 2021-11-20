@@ -1,12 +1,14 @@
 from flask import render_template, redirect, flash, url_for, request
 from flask_login import login_required, login_user, logout_user
+from itertools import accumulate
 
 from main import app, db
 from flask import render_template
 
 from main.decorators import admin_required
 from main.forms import LoginForm, AddUserForm, AddTriebwagenForm, AddPersonenwaggonForm
-from main.models import User, Triebwagen, Personenwaggon
+from main.models import User, Triebwagen, Personenwaggon, Zug
+from main.util import calculate_sitze
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -49,10 +51,16 @@ def adminLanding():
             Triebwagen.fahrgestellnummer == request.form.get('triebwagen')).delete()
             db.session.commit()
             flash("Deleted Triebwagen: {}".format(request.form.get('triebwagen')))
+        if request.form.get('zug'):
+            db.session.query(Zug).filter(Zug.id==request.form.get('zug')).delete()
+            db.session.commit()
+            flash("Deleted Zug {}".format(-1))
         return redirect(url_for('adminLanding'))
     triebwagen = Triebwagen.query.all()
     personenwaggons = Personenwaggon.query.all()
-    return render_template("admin.html", title="Flotte- Home", triebwaegen=triebwagen, personenwaggons=personenwaggons)
+    zuege = Zug.query.all()
+    return render_template("admin.html", title="Flotte- Home", triebwaegen=triebwagen, personenwaggons=personenwaggons, zuege=zuege,
+                           triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query, calculate_sitze=calculate_sitze)
 
 @app.route('/admin/user', methods=['GET', 'POST'])
 @login_required
@@ -110,8 +118,12 @@ def addWaggon():
 @admin_required
 def train():
     has_triebwagen = False
+    has_error=False
     spurweite = 0
     gewicht = 0
+    train = Zug()
+    db.session.add(train)
+    db.session.commit()
     for field in request.form.items():
         if field.__getitem__(0).__contains__('tw'):
             if has_triebwagen:
@@ -121,22 +133,30 @@ def train():
             tw = Triebwagen.query.filter_by(fahrgestellnummer=field.__getitem__(1)).first()
             tw.is_available=False
             spurweite=tw.spurweite
+            train.triebwagen=tw.fahrgestellnummer
+            tw.zug_id=train.id
         if field.__getitem__(0).__contains__('pw'):
             pw = Personenwaggon.query.filter_by(fahrgestellnummer=field.__getitem__(1)).first()
             if spurweite == 0:
                 spurweite = pw.spurweite
             elif spurweite != pw.spurweite:
-                flash('Spurweite of Personenwaggon {} does not match'.format(pw.fahrgestellnummer))
+                flash('Error: Spurweite of Personenwaggon {} does not match'.format(pw.fahrgestellnummer))
                 return redirect(url_for('adminLanding'))
             pw.is_available=False
+            pw.zug_id=train.id
             gewicht=gewicht+pw.maxGewicht
-    if has_triebwagen==False:
+            train.personenwaggons.append(pw)
+    if not has_triebwagen:
         flash('No Triebwagen has been selected')
-        return redirect(url_for('adminLanding'))
-    if gewicht > tw.zugkraft:
+        has_error=True
+    elif gewicht > tw.zugkraft:
         flash('Zugkraft is not sufficient')
-        return redirect(url_for('adminLanding'))
-    db.session.commit()
+        has_error=True
+    if not has_error:
+        db.session.commit()
+        flash("Zug with id {} has been added".format(train.id))
+    else:
+        db.session.rollback()
     return redirect(url_for('adminLanding'))
 
 

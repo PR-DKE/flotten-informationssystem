@@ -89,6 +89,36 @@
     </table>
 </div>
 </form>
+<br>
+<hr>
+<h1>Züge</h1>
+<div class="personal-table">
+    <table id="data3" class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Zugkraft</th>
+            <th>Sitzanzahl</th>
+            <th>Options</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for zug in zuege %}
+        <tr>
+            <td>{{zug.id}}</td>
+            <td>{{triebwagen_query.get(zug.triebwagen).zugkraft}}</td>
+            <td>{{ calculate_sitze(zug.id) }}</td>
+            <td>
+                <form action="{{ url_for('adminLanding') }}" method="POST">
+                    <input id="zug" name="zug" type="hidden" value="{{zug.id}}">
+                    <button class="btn btn-secondary" type="submit"> Delete </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -98,6 +128,9 @@
     });
      $(document).ready(function () {
         $('#data2').DataTable();
+    });
+     $(document).ready(function () {
+        $('#data3').DataTable();
     });
 </script>
 {% endblock %}
