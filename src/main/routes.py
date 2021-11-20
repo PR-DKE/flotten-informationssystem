@@ -8,7 +8,7 @@ from flask import render_template
 from main.decorators import admin_required
 from main.forms import LoginForm, AddUserForm, AddTriebwagenForm, AddPersonenwaggonForm
 from main.models import User, Triebwagen, Personenwaggon, Zug
-from main.util import calculate_sitze
+from main.util import calculate_sitze, calculate_waggons, calculate_maxgewicht
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -54,13 +54,14 @@ def adminLanding():
         if request.form.get('zug'):
             db.session.query(Zug).filter(Zug.id==request.form.get('zug')).delete()
             db.session.commit()
-            flash("Deleted Zug {}".format(-1))
+            flash("Deleted Zug {}".format(request.form.get('zug')))
         return redirect(url_for('adminLanding'))
     triebwagen = Triebwagen.query.all()
     personenwaggons = Personenwaggon.query.all()
     zuege = Zug.query.all()
     return render_template("admin.html", title="Flotte- Home", triebwaegen=triebwagen, personenwaggons=personenwaggons, zuege=zuege,
-                           triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query, calculate_sitze=calculate_sitze)
+                           triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query, calculate_sitze=calculate_sitze,
+                           calculate_waggons=calculate_waggons, calculate_maxgewicht=calculate_maxgewicht)
 
 @app.route('/admin/user', methods=['GET', 'POST'])
 @login_required
@@ -128,10 +129,9 @@ def train():
         if field.__getitem__(0).__contains__('tw'):
             if has_triebwagen:
                 flash('Error: Too many Triebwagen')
-                return redirect(url_for('adminLanding'))
+                has_error=True
             has_triebwagen=True
             tw = Triebwagen.query.filter_by(fahrgestellnummer=field.__getitem__(1)).first()
-            tw.is_available=False
             spurweite=tw.spurweite
             train.triebwagen=tw.fahrgestellnummer
             tw.zug_id=train.id
@@ -141,8 +141,7 @@ def train():
                 spurweite = pw.spurweite
             elif spurweite != pw.spurweite:
                 flash('Error: Spurweite of Personenwaggon {} does not match'.format(pw.fahrgestellnummer))
-                return redirect(url_for('adminLanding'))
-            pw.is_available=False
+                has_error=True
             pw.zug_id=train.id
             gewicht=gewicht+pw.maxGewicht
             train.personenwaggons.append(pw)
@@ -157,6 +156,8 @@ def train():
         flash("Zug with id {} has been added".format(train.id))
     else:
         db.session.rollback()
+        db.session.query(Zug).filter(Zug.id == train.id).delete()
+        db.session.commit()
     return redirect(url_for('adminLanding'))
 
 

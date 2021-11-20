@@ -3,7 +3,40 @@
 {% block content %}
 {{super()}}
 
-<h1>Waggons</h1>
+<br>
+<div class="personal-table">
+    <h1>Züge</h1>
+    <table id="data3" class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Zugkraft (t)</th>
+            <th>Max. Gewicht (t)</th>
+            <th>Waggons</th>
+            <th>Sitzanzahl</th>
+            <th>Options</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for zug in zuege %}
+        <tr>
+            <td>{{zug.id}}</td>
+            <td>{{triebwagen_query.get(zug.triebwagen).zugkraft}}</td>
+            <td>{{calculate_maxgewicht(zug.id)}}</td>
+            <td> {{calculate_waggons(zug.id)}}</td>
+            <td>{{ calculate_sitze(zug.id) }}</td>
+            <td>
+                <form action="{{ url_for('adminLanding') }}" method="POST">
+                    <input id="zug" name="zug" type="hidden" value="{{zug.id}}">
+                    <button class="btn btn-secondary" type="submit"> Delete </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
 <hr>
 <form action="{{url_for('train')}}" method="post">
     <button class="btn btn-primary" type="submit" style="float: right; margin-right: 30px">Submit Train</button>
@@ -26,8 +59,8 @@
             <td>{{ triebwagen.fahrgestellnummer }}</td>
             <td>{{ triebwagen.spurweite }}</td>
             <td>{{ triebwagen.zugkraft }}</td>
-            <td>{{ triebwagen.is_available }}</td>
-            {% if triebwagen.is_available %}
+            <td>{{ triebwagen.zug_id == none }}</td>
+            {% if triebwagen.zug_id == none %}
             <td>
                 <input type="checkbox" name="tw{{triebwagen.fahrgestellnummer}}" value={{triebwagen.fahrgestellnummer}}>
             </td>
@@ -47,6 +80,7 @@
     </table>
 </div>
 <br>
+    <hr>
 <div class="personal-table">
     <h2>Personenwaggons</h2>
     <table id="data2" class="table table-striped">
@@ -68,8 +102,8 @@
             <td>{{ personenwaggon.spurweite }}</td>
             <td>{{ personenwaggon.maxGewicht }}</td>
             <td>{{ personenwaggon.sitzanzahl }}</td>
-            <td>{{ personenwaggon.is_available }}</td>
-            {% if personenwaggon.is_available %}
+            <td>{{ personenwaggon.zug_id == none }}</td>
+            {% if personenwaggon.zug_id == none %}
             <td>
                 <input type="checkbox" name="pw{{personenwaggon.fahrgestellnummer}}" value={{personenwaggon.fahrgestellnummer}}>
             </td>
@@ -91,34 +125,6 @@
 </form>
 <br>
 <hr>
-<h1>Züge</h1>
-<div class="personal-table">
-    <table id="data3" class="table table-striped">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Zugkraft</th>
-            <th>Sitzanzahl</th>
-            <th>Options</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for zug in zuege %}
-        <tr>
-            <td>{{zug.id}}</td>
-            <td>{{triebwagen_query.get(zug.triebwagen).zugkraft}}</td>
-            <td>{{ calculate_sitze(zug.id) }}</td>
-            <td>
-                <form action="{{ url_for('adminLanding') }}" method="POST">
-                    <input id="zug" name="zug" type="hidden" value="{{zug.id}}">
-                    <button class="btn btn-secondary" type="submit"> Delete </button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
 {% endblock %}
 
 {% block scripts %}
