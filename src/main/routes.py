@@ -11,7 +11,7 @@ from flask import render_template
 from main.decorators import admin_required
 from main.forms import LoginForm, AddUserForm, AddTriebwagenForm, AddPersonenwaggonForm, EditPasswordForm
 from main.models import User, Triebwagen, Personenwaggon, Zug
-from main.util import calculate_sitze, calculate_waggons, calculate_maxgewicht
+from main.util import calculate_sitze, calculate_waggons, calculate_maxgewicht, get_spurweite
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -64,7 +64,7 @@ def adminLanding():
     zuege = Zug.query.all()
     return render_template("admin.html", title="Flotte- Home", triebwaegen=triebwagen, personenwaggons=personenwaggons, zuege=zuege,
                            triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query, calculate_sitze=calculate_sitze,
-                           calculate_waggons=calculate_waggons, calculate_maxgewicht=calculate_maxgewicht)
+                           calculate_waggons=calculate_waggons, calculate_maxgewicht=calculate_maxgewicht, get_spurweite=get_spurweite)
 
 @app.route('/admin/user', methods=['GET', 'POST'])
 @login_required
