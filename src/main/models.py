@@ -1,3 +1,4 @@
+from flask import url_for
 from sqlalchemy import null
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -56,8 +57,27 @@ class Personenwaggon(Waggon):
 
 class Zug(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, default=null)
     triebwagen = db.Column(db.String, db.ForeignKey('triebwagen.fahrgestellnummer'))
     personenwaggons = db.relationship("Personenwaggon", backref="zug")
+
+    def to_json(self):
+        triebwagen = Triebwagen.query.get(self.triebwagen)
+        waggons = Personenwaggon.query.filter_by(zug_id=self.id)
+        sitze = 0
+        count = 0
+        for waggon in waggons:
+            sitze += waggon.sitzanzahl
+            count+=1
+        json_train={
+            'url': url_for('get_train', id=self.id),
+            'name': self.name,
+            'id': self.id,
+            'waggons': count,
+            'sitze': sitze,
+            'spurweite': triebwagen.spurweite
+        }
+        return json_train
 
 
 

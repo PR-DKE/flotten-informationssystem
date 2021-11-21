@@ -1,4 +1,4 @@
-from flask import render_template, redirect, flash, url_for, request, abort
+from flask import render_template, redirect, flash, url_for, request, abort, jsonify
 from flask_login import login_required, login_user, logout_user
 from itertools import accumulate
 
@@ -126,6 +126,7 @@ def train():
     spurweite = 0
     gewicht = 0
     train = Zug()
+    train.name='test-name'
     db.session.add(train)
     db.session.commit()
     for field in request.form.items():
@@ -202,5 +203,14 @@ def empLanding():
     return render_template("employee-base.html")
 
 
+@app.route("/api/train")
+def get_trains():
+    trains = Zug.query.all()
+    return jsonify({'trains':[train.to_json() for train in trains]})
+
+@app.route("/api/train/<id>")
+def get_train(id):
+    train = Zug.query.get(id)
+    return jsonify(train.to_json())
 
 
