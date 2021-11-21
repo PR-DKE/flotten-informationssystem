@@ -30,6 +30,9 @@
                     <input id="zug" name="zug" type="hidden" value="{{zug.id}}">
                     <button class="btn btn-secondary" type="submit"> Delete </button>
                 </form>
+                 <form action="{{ url_for('edit_train', id=zug.id) }}" method="GET">
+                    <button class="btn btn-secondary" type="submit"> Edit </button>
+                </form>
             </td>
         </tr>
         {% endfor %}
@@ -47,7 +50,7 @@
         <tr>
             <th>Fahrgestellnummer</th>
             <th>Spurweite</th>
-            <th>Zugkraft</th>
+            <th>Zugkraft (t)</th>
             <th>Available?</th>
             <th>Select</th>
             <th>Options</th>
@@ -88,7 +91,7 @@
         <tr>
             <th>Fahrgestellnummer</th>
             <th>Spurweite</th>
-            <th>Maximalgewicht</th>
+            <th>Max. Gewicht(t)</th>
             <th>Sitzanzahl</th>
             <th>Available?</th>
             <th>Select</th>

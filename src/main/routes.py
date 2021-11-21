@@ -1,6 +1,9 @@
-from flask import render_template, redirect, flash, url_for, request
+from flask import render_template, redirect, flash, url_for, request, abort
 from flask_login import login_required, login_user, logout_user
 from itertools import accumulate
+
+from sqlalchemy import and_
+from sqlalchemy.sql.operators import is_
 
 from main import app, db
 from flask import render_template
@@ -114,7 +117,7 @@ def addWaggon():
         return redirect(url_for('addWaggon'))
     return render_template("addWaggon.html", form=form, form2=form2, title='Add Waggons')
 
-@app.route('/admin/train', methods=['POST'])
+@app.route('/api/admin/train', methods=['POST'])
 @login_required
 @admin_required
 def train():
@@ -142,7 +145,6 @@ def train():
             elif spurweite != pw.spurweite:
                 flash('Error: Spurweite of Personenwaggon {} does not match'.format(pw.fahrgestellnummer))
                 has_error=True
-            pw.zug_id=train.id
             gewicht=gewicht+pw.maxGewicht
             train.personenwaggons.append(pw)
     if not has_triebwagen:
@@ -160,7 +162,39 @@ def train():
         db.session.commit()
     return redirect(url_for('adminLanding'))
 
+@app.route("/admin/train/<id>")
+@login_required
+@admin_required
+def edit_train(id):
+    zug = Zug.query.get(id)
+    triebwagen = Triebwagen.query.get(zug.triebwagen)
+    waggons= Personenwaggon.query.filter_by(spurweite=triebwagen.spurweite)
+    return render_template("edit-train.html", waggons=waggons, zug=zug)
 
+@app.route("/api/admin/train/<id>/waggon/<fahrgestellnummer>", methods=["POST"])
+@login_required
+@admin_required
+def add_waggon_to_train(id, fahrgestellnummer):
+    zug = Zug.query.get(id)
+    waggon = Personenwaggon.query.get(fahrgestellnummer)
+    triebwagen = Triebwagen.query.get(zug.triebwagen)
+
+    if waggon.spurweite != triebwagen.spurweite:
+        flash("Spurweite does not match")
+        abort(500)
+
+    waggons = Personenwaggon.query.filter_by(zug_id=id)
+    maxGewicht = 0
+    for w in waggons:
+        maxGewicht = maxGewicht+w.maxGewicht
+
+    if maxGewicht + waggon.maxGewicht > triebwagen.zugkraft:
+        flash("Zugkraft not sufficient")
+    else:
+        zug.personenwaggons.append(waggon)
+        db.session.commit()
+        flash("Waggon {} added to train {}".format(waggon.fahrgestellnummer, id))
+    return redirect(url_for('edit_train', id=id))
 
 @app.route('/employee')
 @login_required

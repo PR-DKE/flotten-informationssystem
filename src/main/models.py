@@ -47,7 +47,7 @@ class Waggon(db.Model):
 
 class Triebwagen(Waggon):
     zugkraft = db.Column(db.DECIMAL)
-    zug_id = db.Column(db.Integer, db.ForeignKey('zug.id', ondelete='SET NULL'), default=null)
+    zug_id = db.Column(db.Integer, db.ForeignKey('zug.id', ondelete='SET NULL',))
 
 class Personenwaggon(Waggon):
     sitzanzahl = db.Column(db.Integer)

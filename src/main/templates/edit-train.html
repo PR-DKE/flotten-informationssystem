@@ -1,0 +1,48 @@
+{% extends "admin-base.html" %}
+
+
+{% block content %}
+{{super()}}
+<div class="personal-table">
+    <h1>Available Personenwaggons</h1>
+<table  id="data" class="table table-striped">
+    <thead>
+    <tr>
+       <th>Fahrgestellnummer</th>
+        <th>Spurweite</th>
+        <th>Max. Gewicht(t)</th>
+        <th>Sitzanzahl</th>
+        <th>Options</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for waggon in waggons %}
+    {% if waggon.zug_id == none %}
+    <tr>
+        <td>{{waggon.fahrgestellnummer}}</td>
+        <td>{{waggon.spurweite}}</td>
+        <td>{{waggon.maxGewicht}}</td>
+        <td>{{waggon.sitzanzahl}}</td>
+        <td>
+            <form action="{{ url_for('add_waggon_to_train', id=zug.id, fahrgestellnummer=waggon.fahrgestellnummer) }}" method="POST">
+                <button class="btn btn-primary" type="submit"> Add </button>
+            </form>
+        </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{{super()}}
+<script>
+    $(document).ready(function () {
+        $('#data').DataTable();
+    });
+</script>
+{% endblock %}
+
