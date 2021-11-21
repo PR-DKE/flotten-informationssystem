@@ -1,3 +1,4 @@
+from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, RadioField, DecimalField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo, ValidationError
@@ -49,3 +50,14 @@ class AddPersonenwaggonForm(FlaskForm):
         if Triebwagen.query.filter_by(fahrgestellnummer=field.data).first() \
                 or Personenwaggon.query.filter_by(fahrgestellnummer=field.data).first():
             raise ValidationError('Fahrgestellnummer already in use')
+
+
+class EditPasswordForm(FlaskForm):
+    old_password = PasswordField('Old Password', validators=[DataRequired()])
+    password = PasswordField('New Password', validators=[DataRequired(), EqualTo('password2', message='Passwords must match')])
+    password2 = PasswordField('Retype New Password', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+    def validate_old_password(self, field):
+        if not current_user.verify_password(field.data):
+            raise ValidationError('Old Password not correct')

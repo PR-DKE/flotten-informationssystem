@@ -10,6 +10,7 @@
         <thead>
         <tr>
             <th>ID</th>
+            <th>Name</th>
             <th>Zugkraft (t)</th>
             <th>Max. Gewicht (t)</th>
             <th>Waggons</th>
@@ -21,6 +22,7 @@
         {% for zug in zuege %}
         <tr>
             <td>{{zug.id}}</td>
+            <td>{{zug.name}}</td>
             <td>{{triebwagen_query.get(zug.triebwagen).zugkraft}}</td>
             <td>{{calculate_maxgewicht(zug.id)}}</td>
             <td> {{calculate_waggons(zug.id)}}</td>
@@ -41,8 +43,14 @@
 </div>
 <br>
 <hr>
+<br>
 <form action="{{url_for('train')}}" method="post">
-    <button class="btn btn-primary" type="submit" style="float: right; margin-right: 30px">Submit Train</button>
+    <div style="float: right; margin-right: 30px">
+        <span>Name: </span>
+        <input type="text" name="zug_name">
+        <button class="btn btn-primary" type="submit">Submit Train</button>
+    </div>
+    <br>
 <div class="personal-table">
     <h2>Triebwagen</h2>
     <table id="data" class="table table-striped" >

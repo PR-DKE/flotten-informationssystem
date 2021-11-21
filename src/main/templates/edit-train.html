@@ -4,7 +4,15 @@
 {% block content %}
 {{super()}}
 <div class="personal-table">
-    <h1>Available Personenwaggons</h1>
+    <h1 style="text-align: center">Edit Zug "{{zug.name}}"</h1>
+    <div style="float: right">
+        <form action="{{ url_for('adminLanding') }}" method="POST">
+            <input id="zug" name="zug" type="hidden" value="{{zug.id}}">
+            <button class="btn btn-primary" type="submit"> Delete </button>
+        </form>
+    </div>
+    <br>
+    <h2>Available Personenwaggons</h2>
 <table  id="data" class="table table-striped">
     <thead>
     <tr>
@@ -33,6 +41,34 @@
     {% endfor %}
     </tbody>
 </table>
+    <br>
+    <h2>Assigned Personenwaggons</h2>
+    <table  id="data2" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Fahrgestellnummer</th>
+            <th>Spurweite</th>
+            <th>Max. Gewicht(t)</th>
+            <th>Sitzanzahl</th>
+            <th>Options</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for waggon in own_waggons %}
+        <tr>
+            <td>{{waggon.fahrgestellnummer}}</td>
+            <td>{{waggon.spurweite}}</td>
+            <td>{{waggon.maxGewicht}}</td>
+            <td>{{waggon.sitzanzahl}}</td>
+            <td>
+                <form action="{{ url_for('remove_waggon_from_train', id=zug.id, fahrgestellnummer=waggon.fahrgestellnummer) }}" method="POST">
+                    <button class="btn btn-primary" type="submit"> Remove </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
 
@@ -42,6 +78,9 @@
 <script>
     $(document).ready(function () {
         $('#data').DataTable();
+    });
+     $(document).ready(function () {
+        $('#data2').DataTable();
     });
 </script>
 {% endblock %}

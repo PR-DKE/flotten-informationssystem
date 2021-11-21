@@ -1,5 +1,5 @@
 from flask import render_template, redirect, flash, url_for, request, abort, jsonify
-from flask_login import login_required, login_user, logout_user
+from flask_login import login_required, login_user, logout_user, current_user
 from itertools import accumulate
 
 from sqlalchemy import and_
@@ -9,7 +9,7 @@ from main import app, db
 from flask import render_template
 
 from main.decorators import admin_required
-from main.forms import LoginForm, AddUserForm, AddTriebwagenForm, AddPersonenwaggonForm
+from main.forms import LoginForm, AddUserForm, AddTriebwagenForm, AddPersonenwaggonForm, EditPasswordForm
 from main.models import User, Triebwagen, Personenwaggon, Zug
 from main.util import calculate_sitze, calculate_waggons, calculate_maxgewicht
 
@@ -126,7 +126,7 @@ def train():
     spurweite = 0
     gewicht = 0
     train = Zug()
-    train.name='test-name'
+    train.name= request.form.get('zug_name')
     db.session.add(train)
     db.session.commit()
     for field in request.form.items():
@@ -170,7 +170,8 @@ def edit_train(id):
     zug = Zug.query.get(id)
     triebwagen = Triebwagen.query.get(zug.triebwagen)
     waggons= Personenwaggon.query.filter_by(spurweite=triebwagen.spurweite)
-    return render_template("edit-train.html", waggons=waggons, zug=zug)
+    own_waggons = Personenwaggon.query.filter_by(zug_id=id)
+    return render_template("edit-train.html", waggons=waggons, zug=zug, own_waggons=own_waggons)
 
 @app.route("/api/admin/train/<id>/waggon/<fahrgestellnummer>", methods=["POST"])
 @login_required
@@ -197,6 +198,34 @@ def add_waggon_to_train(id, fahrgestellnummer):
         flash("Waggon {} added to train {}".format(waggon.fahrgestellnummer, id))
     return redirect(url_for('edit_train', id=id))
 
+@app.route("/api/admin/train/<id>/waggon/own/<fahrgestellnummer>", methods=['POST'])
+@login_required
+@admin_required
+def remove_waggon_from_train(id, fahrgestellnummer):
+    waggon = Personenwaggon.query.get(fahrgestellnummer)
+    waggon.zug_id = None
+    db.session.commit()
+    flash("Personenwaggon {} removed from train {}".format(fahrgestellnummer, id))
+    return redirect(url_for('edit_train', id=id))
+
+@app.route('/settings')
+@login_required
+def settings():
+    if current_user.is_admin:
+        return redirect(url_for('admin_settings'))
+
+@app.route('/admin/settings', methods=['GET', 'POST'])
+@admin_required
+def admin_settings():
+    form = EditPasswordForm()
+    if form.validate_on_submit():
+        u = User.query.get(current_user.get_id())
+        u.password = form.password.data
+        db.session.commit()
+        flash("Password has been changed")
+    return render_template('admin-settings.html', form=form)
+
+
 @app.route('/employee')
 @login_required
 def empLanding():
@@ -212,5 +241,7 @@ def get_trains():
 def get_train(id):
     train = Zug.query.get(id)
     return jsonify(train.to_json())
+
+
 
 
