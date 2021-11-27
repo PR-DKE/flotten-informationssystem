@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import render_template, redirect, flash, url_for, request, abort, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
 from itertools import accumulate
@@ -10,7 +12,7 @@ from flask import render_template
 
 from main.decorators import admin_required
 from main.forms import LoginForm, AddUserForm, AddTriebwagenForm, AddPersonenwaggonForm, EditPasswordForm
-from main.models import User, Triebwagen, Personenwaggon, Zug
+from main.models import User, Triebwagen, Personenwaggon, Zug, Maintenance
 from main.util import calculate_sitze, calculate_waggons, calculate_maxgewicht, get_spurweite
 
 
@@ -173,6 +175,64 @@ def edit_train(id):
     own_waggons = Personenwaggon.query.filter_by(zug_id=id)
     return render_template("edit-train.html", waggons=waggons, zug=zug, own_waggons=own_waggons)
 
+
+@app.route("/admin/train/<id>/wartung")
+@login_required
+@admin_required
+def wartung(id):
+    zug = Zug.query.get(id)
+    emps = User.query.filter_by(is_admin=False)
+    return render_template("wartung.html", zug=zug, emps=emps)
+
+@app.route('/settings')
+@login_required
+def settings():
+    if current_user.is_admin:
+        return redirect(url_for('admin_settings'))
+    else:
+        return "No template for emp settings"
+
+@app.route('/admin/settings', methods=['GET', 'POST'])
+@admin_required
+def admin_settings():
+    form = EditPasswordForm()
+    if form.validate_on_submit():
+        u = User.query.get(current_user.get_id())
+        u.password = form.password.data
+        db.session.commit()
+        flash("Password has been changed")
+    return render_template('admin-settings.html', form=form)
+
+
+@app.route('/employee')
+@login_required
+def empLanding():
+    return render_template("employee-base.html")
+
+
+
+@app.route("/api/admin/train/<id>/wartung", methods=["POST"])
+@login_required
+@admin_required
+def scheduleMaintenance(id):
+    flash("Scheduled")
+    if request.method=='POST':
+        form = request.form
+        maintenance = Maintenance(datetime=form.get('date'),
+                                  duration=form.get('duration'),
+                                    description=form.get('description'),
+                                  zug_id=id
+                                  )
+        db.session.add(maintenance)
+        db.session.commit()
+        for field in form.items():
+            if field.__getitem__(0).__contains__('emp.'):
+                mail = field.__getitem__(1)
+                u = User.query.filter_by(email=mail).first()
+                maintenance.emp_association.append(u)
+        db.session.commit()
+    return redirect(url_for("wartung", id=id))
+
 @app.route("/api/admin/train/<id>/waggon/<fahrgestellnummer>", methods=["POST"])
 @login_required
 @admin_required
@@ -208,29 +268,6 @@ def remove_waggon_from_train(id, fahrgestellnummer):
     flash("Personenwaggon {} removed from train {}".format(fahrgestellnummer, id))
     return redirect(url_for('edit_train', id=id))
 
-@app.route('/settings')
-@login_required
-def settings():
-    if current_user.is_admin:
-        return redirect(url_for('admin_settings'))
-
-@app.route('/admin/settings', methods=['GET', 'POST'])
-@admin_required
-def admin_settings():
-    form = EditPasswordForm()
-    if form.validate_on_submit():
-        u = User.query.get(current_user.get_id())
-        u.password = form.password.data
-        db.session.commit()
-        flash("Password has been changed")
-    return render_template('admin-settings.html', form=form)
-
-
-@app.route('/employee')
-@login_required
-def empLanding():
-    return render_template("employee-base.html")
-
 
 @app.route("/api/train")
 def get_trains():
@@ -242,6 +279,8 @@ def get_train(id):
     train = Zug.query.get(id)
     return jsonify(train.to_json())
 
-
-
-
+@app.route("/api/train/<id>/maintenance")
+def get_maintenances_for_train(id):
+    m = Maintenance.query.filter_by(zug_id=id)
+    m_f = [m for m in m if m.datetime > datetime.now()]
+    return jsonify({'maintenances': [m.to_json_medium() for m in m]})

@@ -1,0 +1,56 @@
+{% extends "admin-base.html" %}
+
+{% block content %}
+{{super()}}
+<div class="personal-table">
+    <h1 style="text-align: center">Schedule Maintenance for Train {{zug.name}}</h1>
+    <br>
+<form action="{{url_for('scheduleMaintenance', id=zug.id)}}" method="post" class="personal-form auto">
+    <div class="form-group">
+        <label for="date-time">Enter the date and start time: </label>
+        <input class="form-control" id="date-time" name="date" type="datetime-local">
+    </div>
+    <br>
+    <div class="form-group">
+        <label for="duration">Enter the expected duration of the maintenance (in hours): </label>
+        <input class="form-control" id="duration" name="duration" type="number">
+    </div>
+    <br>
+    <br>
+    <label>Choose employees: </label>
+    <br>
+<table id="data" class="table table-striped">
+    <thead>
+    <tr>
+        <th>Employee</th>
+        <th>Select</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for emp in emps %}
+    <tr>
+        <td>{{emp.email}}</td>
+        <td>
+            <input type="checkbox" name="emp.{{emp.email}}" value={{emp.email}}>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+    <hr>
+    <div class="form-group">
+        <label for="description">Enter additional information: </label>
+        <textarea id="description" name="description" class="form-control"></textarea>
+    </div>
+    <input type="submit" class="form-control">
+</form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('#data').DataTable();
+    });
+</script>
+{% endblock %}
