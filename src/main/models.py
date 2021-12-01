@@ -71,7 +71,7 @@ class Zug(db.Model):
             sitze += waggon.sitzanzahl
             count+=1
         ma = Maintenance.query.filter_by(zug_id=self.id)
-        filtered_m = [m for m in ma if m.datetime > datetime.now()]
+        filtered_m = [m for m in ma if m.datetime.date() >= datetime.now().date()]
         json_train={
             'url': url_for('get_train', id=self.id),
             'maintenances_url': url_for('get_maintenances_for_train', id=self.id),
@@ -87,8 +87,8 @@ class Zug(db.Model):
 
 
 maintenance_employee_table = db.Table('maintenance_employee_association',
-                                      db.Column('maintenance_id', db.ForeignKey('maintenance.id')),
-                                      db.Column('employee_id', db.ForeignKey('users.email')))
+                                      db.Column('maintenance_id', db.ForeignKey('maintenance.id', ondelete="CASCADE")),
+                                      db.Column('employee_id', db.ForeignKey('users.email', ondelete="SET NULL")))
 
 class Maintenance(db.Model):
     id = db.Column(db.Integer, primary_key=True)

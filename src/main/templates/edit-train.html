@@ -1,17 +1,51 @@
-{% extends "admin-base.html" %}
+{% extends "base.html" %}
 
 
 {% block content %}
 {{super()}}
 <div class="personal-table">
     <h1 style="text-align: center">Edit Zug "{{zug.name}}"</h1>
-    <div style="float: right">
-        <form action="{{ url_for('adminLanding') }}" method="POST">
-            <input id="zug" name="zug" type="hidden" value="{{zug.id}}">
-            <button class="btn btn-primary" type="submit"> Delete Train </button>
+    <div class="personal-form">
+        <form action="{{url_for('edit_train_name', id=zug.id)}}" method="POST">
+            <div class="form-group">
+                <span>Name: </span>
+                <input class="form-control" type="text" value="{{zug.name}}" id="new_name" name="name">
+            </div>
+            <button class="btn btn-primary" type="submit">Change name</button>
         </form>
     </div>
     <br>
+    <br>
+    <h2>Details</h2>
+    <table id="data3" class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Spurweite (mm)</th>
+            <th>Zugkraft (t)</th>
+            <th>Verbleibende Zugkraft</th>
+            <th>Max. Gewicht (t)</th>
+            <th>Waggons</th>
+            <th>Sitzanzahl</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{{zug.id}}</td>
+            <td>{{zug.name}}</td>
+            <td>{{get_spurweite(zug.id)}}</td>
+            <td>{{triebwagen_query.get(zug.triebwagen).zugkraft}}</td>
+            <td>{{triebwagen_query.get(zug.triebwagen).zugkraft - calculate_maxgewicht(zug.id)}}</td>
+            <td>{{calculate_maxgewicht(zug.id)}}</td>
+            <td> {{calculate_waggons(zug.id)}}</td>
+            <td>{{ calculate_sitze(zug.id) }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<div class="personal-table">
     <h2>Available Personenwaggons</h2>
 <table  id="data" class="table table-striped">
     <thead>

@@ -1,8 +1,34 @@
-{% extends "admin-base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 {{super()}}
-
+{% if not current_user.is_admin %}
+<div class="personal-table">
+    <h1>Meine bevorstehenden Wartungen</h1>
+    <table id="data4" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Zug</th>
+            <th>Datum</th>
+            <th>Uhrzeit</th>
+            <th>Dauer</th>
+            <th>Infos</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for wartung in wartungen %}
+        <tr>
+            <td>{{wartung.zug_id}}</td>
+            <td>{{wartung.datetime.date()}}</td>
+            <td>{{wartung.datetime.time()}}</td>
+            <td>{{wartung.duration}}</td>
+            <td>{{wartung.description}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 <br>
 <div class="personal-table">
     <h1>Züge</h1>
@@ -16,7 +42,9 @@
             <th>Max. Gewicht (t)</th>
             <th>Waggons</th>
             <th>Sitzanzahl</th>
+            {% if current_user.is_admin %}
             <th>Options</th>
+            {% endif %}
         </tr>
         </thead>
         <tbody>
@@ -29,20 +57,18 @@
             <td>{{calculate_maxgewicht(zug.id)}}</td>
             <td> {{calculate_waggons(zug.id)}}</td>
             <td>{{ calculate_sitze(zug.id) }}</td>
+            {% if current_user.is_admin %}
             <td>
-                <div class="btn-block">
-                    <form action="{{ url_for('adminLanding') }}" method="POST">
-                        <input id="zug" name="zug" type="hidden" value="{{zug.id}}">
-                        <button class="btn btn-secondary btn-sm" type="submit"> Delete </button>
-                    </form>
-                    <form action="{{ url_for('edit_train', id=zug.id) }}" method="GET">
-                        <button class="btn btn-secondary btn-sm" type="submit"> Edit </button>
-                    </form>
-                    <form action="{{ url_for('wartung', id=zug.id) }}" method="GET">
-                        <button class="btn btn-secondary btn-sm" type="submit"> Maintenance </button>
-                    </form>
+                <div class="btn-group" id="openItems.{{zug.id}}">
+                    <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caption"></span><span class="caret"></span></button>
+                    <ul class="dropdown-menu" id="openItemDropdown.{{zug.id}}">
+                        <li><a class="dropdown-item" href="{{ url_for('edit_train', id=zug.id) }}">Edit</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('wartung', id=zug.id) }}">Maintenance</a></li>
+                        <li><a class="dropdown-item"  methods="POST" href="{{ url_for('delete_train', id=zug.id) }}">Delete</a></li>
+                    </ul>
                 </div>
             </td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>
@@ -51,12 +77,14 @@
 <br>
 <hr>
 <br>
+{% if current_user.is_admin %}
 <form action="{{url_for('train')}}" method="post">
-    <div style="float: right; margin-right: 30px">
+    <div style="margin-left: 30px">
         <span>Name: </span>
         <input type="text" name="zug_name">
         <button class="btn btn-primary" type="submit">Submit Train</button>
     </div>
+    {% endif %}
     <br>
 <div class="personal-table">
     <h2>Triebwagen</h2>
@@ -68,8 +96,10 @@
             <th>Zugkraft (t)</th>
             <th>Available?</th>
             <th>Zug</th>
+            {% if current_user.is_admin %}
             <th>Select</th>
             <th>Options</th>
+            {% endif %}
         </tr>
         </thead>
         <tbody>
@@ -85,15 +115,17 @@
                 </svg>
             </td>
             <td>-</td>
+            {% if current_user.is_admin %}
             <td>
                 <input type="checkbox" name="tw{{triebwagen.fahrgestellnummer}}" value={{triebwagen.fahrgestellnummer}}>
             </td>
             <td>
-                <form action="{{ url_for('adminLanding') }}" method="POST">
+                <form action="{{ url_for('home') }}" method="POST">
                     <input id="triebwagen" name="triebwagen" type="hidden" value="{{triebwagen.fahrgestellnummer}}">
                     <button type="submit" class="btn btn-secondary btn-sm"> Delete </button>
                 </form>
             </td>
+            {% endif %}
             {% else %}
             <td>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
@@ -101,8 +133,10 @@
                 </svg>
             </td>
             <td>{{triebwagen.zug_id}}</td>
+            {% if current_user.is_admin %}
             <td>-</td>
             <td>-</td>
+            {% endif %}
             {% endif %}
         </tr>
         {% endfor %}
@@ -122,8 +156,10 @@
             <th>Sitzanzahl</th>
             <th>Available?</th>
             <th>Zug</th>
+            {% if current_user.is_admin %}
             <th>Select</th>
             <th>Options</th>
+            {% endif %}
         </tr>
         </thead>
         <tbody>
@@ -140,15 +176,17 @@
                 </svg>
             </td>
             <td>-</td>
+            {% if current_user.is_admin %}
             <td>
                 <input type="checkbox" name="pw{{personenwaggon.fahrgestellnummer}}" value={{personenwaggon.fahrgestellnummer}}>
             </td>
             <td>
-                <form action="{{ url_for('adminLanding') }}" method="POST">
+                <form action="{{ url_for('home') }}" method="POST">
                 <input id="personenwaggon" name="personenwaggon" type="hidden" value="{{personenwaggon.fahrgestellnummer}}">
                 <button class="btn btn-secondary" type="submit"> Delete </button>
             </form>
             </td>
+            {% endif %}
             {% else %}
             <td>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
@@ -156,8 +194,10 @@
                 </svg>
             </td>
             <td>{{personenwaggon.zug_id}}</td>
+            {% if current_user.is_admin %}
             <td>-</td>
             <td>-</td>
+            {% endif %}
             {% endif %}
         </tr>
         {% endfor %}
@@ -181,4 +221,16 @@
         $('#data3').DataTable();
     });
 </script>
+<script>
+     $(document).ready(function(){
+        $('.dropdown-toggle').dropdown()
+    });
+</script>
+{% if not current_user.is_admin %}
+<script>
+    $(document).ready(function () {
+        $('#data4').DataTable();
+    });
+</script>
+{% endif %}
 {% endblock %}

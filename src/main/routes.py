@@ -29,9 +29,7 @@ def indexLanding():
             login_user(user, form.remember_me.data)
             next = request.args.get('next')
             if next is None or not next.startswith('/'):
-                next = url_for('empLanding')
-                if user.is_admin:
-                    next = url_for('adminLanding')
+                next = url_for('home')
             return redirect(next)
     return render_template("index.html", form=form, title="Welcome")
 
@@ -42,11 +40,10 @@ def logout():
     flash('You have benn logged out')
     return redirect(url_for('indexLanding'))
 
-@app.route('/admin', methods=['GET', 'POST'])
+@app.route('/home', methods=['GET', 'POST'])
 @login_required
-@admin_required
-def adminLanding():
-    if request.method == 'POST':
+def home():
+    if request.method == 'POST' and current_user.is_admin:
         if request.form.get('personenwaggon'):
             db.session.query(Personenwaggon).filter(Personenwaggon.fahrgestellnummer == request.form.get('personenwaggon')).delete()
             db.session.commit()
@@ -60,15 +57,18 @@ def adminLanding():
             db.session.query(Zug).filter(Zug.id==request.form.get('zug')).delete()
             db.session.commit()
             flash("Deleted Zug {}".format(request.form.get('zug')))
-        return redirect(url_for('adminLanding'))
+        return redirect(url_for('home'))
     triebwagen = Triebwagen.query.all()
     personenwaggons = Personenwaggon.query.all()
     zuege = Zug.query.all()
-    return render_template("admin.html", title="Flotte- Home", triebwaegen=triebwagen, personenwaggons=personenwaggons, zuege=zuege,
+    m = Maintenance.query.filter(Maintenance.emp_association.any(email=current_user.email)).all()
+    m_f = [m for m in m if m.datetime.date() >= datetime.now().date()]
+    return render_template("home.html", title="Flotte- Home", triebwaegen=triebwagen, personenwaggons=personenwaggons, zuege=zuege,
                            triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query, calculate_sitze=calculate_sitze,
-                           calculate_waggons=calculate_waggons, calculate_maxgewicht=calculate_maxgewicht, get_spurweite=get_spurweite)
+                           calculate_waggons=calculate_waggons, calculate_maxgewicht=calculate_maxgewicht, get_spurweite=get_spurweite,
+                           wartungen=m_f)
 
-@app.route('/admin/user', methods=['GET', 'POST'])
+@app.route('/user', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def addUser():
@@ -81,7 +81,7 @@ def addUser():
         db.session.commit()
         flash('User {} has been registered.'.format(user.email))
         return redirect(url_for('addUser'))
-    return render_template("addUser.html", form=form, title='Add User')
+    return render_template("add-user.html", form=form, title='Add User')
 
 @app.route('/admin/waggon', methods=['GET', 'POST'])
 @login_required
@@ -117,7 +117,7 @@ def addWaggon():
               'Sitzplätze= {} '
               'Maximal-Gewicht= {}'.format(form2.fahrgestellnummer.data, spurweite, form2.sitzanzahl.data, form2.maxGewicht.data))
         return redirect(url_for('addWaggon'))
-    return render_template("addWaggon.html", form=form, form2=form2, title='Add Waggons')
+    return render_template("add-waggon.html", form=form, form2=form2, title='Add Waggons')
 
 @app.route('/api/admin/train', methods=['POST'])
 @login_required
@@ -163,7 +163,7 @@ def train():
         db.session.rollback()
         db.session.query(Zug).filter(Zug.id == train.id).delete()
         db.session.commit()
-    return redirect(url_for('adminLanding'))
+    return redirect(url_for('home'))
 
 @app.route("/admin/train/<id>")
 @login_required
@@ -173,7 +173,9 @@ def edit_train(id):
     triebwagen = Triebwagen.query.get(zug.triebwagen)
     waggons= Personenwaggon.query.filter_by(spurweite=triebwagen.spurweite)
     own_waggons = Personenwaggon.query.filter_by(zug_id=id)
-    return render_template("edit-train.html", waggons=waggons, zug=zug, own_waggons=own_waggons)
+    return render_template("edit-train.html", waggons=waggons, zug=zug, own_waggons=own_waggons, calculate_sitze=calculate_sitze,
+                           calculate_waggons=calculate_waggons, calculate_maxgewicht=calculate_maxgewicht, get_spurweite=get_spurweite,
+                           triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query)
 
 
 @app.route("/admin/train/<id>/wartung")
@@ -184,31 +186,16 @@ def wartung(id):
     emps = User.query.filter_by(is_admin=False)
     return render_template("wartung.html", zug=zug, emps=emps)
 
-@app.route('/settings')
+@app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    if current_user.is_admin:
-        return redirect(url_for('admin_settings'))
-    else:
-        return "No template for emp settings"
-
-@app.route('/admin/settings', methods=['GET', 'POST'])
-@admin_required
-def admin_settings():
     form = EditPasswordForm()
     if form.validate_on_submit():
         u = User.query.get(current_user.get_id())
         u.password = form.password.data
         db.session.commit()
         flash("Password has been changed")
-    return render_template('admin-settings.html', form=form)
-
-
-@app.route('/employee')
-@login_required
-def empLanding():
-    return render_template("employee-base.html")
-
+    return render_template('settings.html', form=form)
 
 
 @app.route("/api/admin/train/<id>/wartung", methods=["POST"])
@@ -268,6 +255,25 @@ def remove_waggon_from_train(id, fahrgestellnummer):
     flash("Personenwaggon {} removed from train {}".format(fahrgestellnummer, id))
     return redirect(url_for('edit_train', id=id))
 
+@app.route("/api/admin/train/<id>/name", methods=["POST"])
+@login_required
+@admin_required
+def edit_train_name(id):
+    form = request.form
+    train = Zug.query.get(id)
+    train.name = request.form.get('name')
+    db.session.commit()
+    return redirect(url_for('edit_train', id=id))
+
+@app.route("/api/admin/train/<id>", methods=["GET"])
+@login_required
+@admin_required
+def delete_train(id):
+    db.session.query(Zug).filter(
+        Zug.id == id).delete()
+    db.session.commit()
+    flash("Zug {} deleted".format(id))
+    return redirect(url_for('home'))
 
 @app.route("/api/train")
 def get_trains():
@@ -282,5 +288,5 @@ def get_train(id):
 @app.route("/api/train/<id>/maintenance")
 def get_maintenances_for_train(id):
     m = Maintenance.query.filter_by(zug_id=id)
-    m_f = [m for m in m if m.datetime > datetime.now()]
+    m_f = [m for m in m if m.datetime.date() >= datetime.now().date()]
     return jsonify({'maintenances': [m.to_json_medium() for m in m]})
