@@ -71,7 +71,7 @@ def home():
 @app.route('/user', methods=['GET', 'POST'])
 @login_required
 @admin_required
-def addUser():
+def users():
     form = AddUserForm()
     if form.validate_on_submit():
         user = User(email=form.email.data,
@@ -80,10 +80,23 @@ def addUser():
         db.session.add(user)
         db.session.commit()
         flash('User {} has been registered.'.format(user.email))
-        return redirect(url_for('addUser'))
-    return render_template("add-user.html", form=form, title='Add User')
+        return redirect(url_for('users'))
+    if request.method == "POST":
+        if request.form.get('delete_user'):
+            db.session.query(User).filter(User.email==request.form.get('delete_user')).delete()
+            db.session.commit()
+            flash("Deleted user {}".format(request.form.get('delete_user')))
+            return redirect(url_for('users'))
+        if request.form.get('make_admin'):
+            flash("made admin")
+            u = User.query.get(request.form.get('make_admin'))
+            u.is_admin = True
+            db.session.commit()
+            return redirect(url_for('users'))
+    users = User.query.all()
+    return render_template("users.html", form=form, users=users, len=len, title='Users')
 
-@app.route('/admin/waggon', methods=['GET', 'POST'])
+@app.route('/waggon', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def addWaggon():
@@ -165,7 +178,7 @@ def train():
         db.session.commit()
     return redirect(url_for('home'))
 
-@app.route("/admin/train/<id>")
+@app.route("/train/<id>")
 @login_required
 @admin_required
 def edit_train(id):
@@ -178,7 +191,7 @@ def edit_train(id):
                            triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query)
 
 
-@app.route("/admin/train/<id>/wartung", methods=["GET", "POST"])
+@app.route("/train/<id>/wartung", methods=["GET", "POST"])
 @login_required
 @admin_required
 def wartung(id):
