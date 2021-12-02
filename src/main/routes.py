@@ -178,13 +178,22 @@ def edit_train(id):
                            triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query)
 
 
-@app.route("/admin/train/<id>/wartung")
+@app.route("/admin/train/<id>/wartung", methods=["GET", "POST"])
 @login_required
 @admin_required
 def wartung(id):
+    if request.method == "POST":
+        m_id = request.form.get('wartung')
+        db.session.query(Maintenance).filter(Maintenance.id==m_id).delete()
+        db.session.commit()
+        flash("Wartung deleted")
+        return redirect(url_for('wartung', id=id))
     zug = Zug.query.get(id)
     emps = User.query.filter_by(is_admin=False)
-    return render_template("wartung.html", zug=zug, emps=emps)
+    m = Maintenance.query.filter_by(zug_id=id).all()
+    m_f = [m for m in m if m.datetime.date()>=datetime.now().date()]
+    return render_template("wartung.html", zug=zug, emps=emps, maintenances=m, User=User,
+                           Maintenance=Maintenance, len=len)
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
@@ -202,7 +211,6 @@ def settings():
 @login_required
 @admin_required
 def scheduleMaintenance(id):
-    flash("Scheduled")
     if request.method=='POST':
         form = request.form
         maintenance = Maintenance(datetime=form.get('date'),
@@ -218,6 +226,7 @@ def scheduleMaintenance(id):
                 u = User.query.filter_by(email=mail).first()
                 maintenance.emp_association.append(u)
         db.session.commit()
+        flash("Scheduled")
     return redirect(url_for("wartung", id=id))
 
 @app.route("/api/admin/train/<id>/waggon/<fahrgestellnummer>", methods=["POST"])
