@@ -3,6 +3,5 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-                              'postgresql://postgres:postgres@localhost:5432/flotte'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///flotte.sqlite3'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
