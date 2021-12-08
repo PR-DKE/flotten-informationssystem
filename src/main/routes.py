@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from dateutil.parser import isoparse
+
 from flask import render_template, redirect, flash, url_for, request, abort, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
 from itertools import accumulate
@@ -226,8 +228,8 @@ def settings():
 def scheduleMaintenance(id):
     if request.method=='POST':
         form = request.form
-        maintenance = Maintenance(datetime=form.get('date'),
-                                  duration=form.get('duration'),
+        maintenance = Maintenance(datetime= isoparse(form.get('date')),
+                                    duration=form.get('duration'),
                                     description=form.get('description'),
                                   zug_id=id
                                   )
