@@ -1,21 +1,12 @@
 from datetime import datetime
-
 from dateutil.parser import isoparse
-
 from flask import render_template, redirect, flash, url_for, request, abort, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
-from itertools import accumulate
-
-from sqlalchemy import and_
-from sqlalchemy.sql.operators import is_
-
 from main import app, db
-from flask import render_template
 
 from main.decorators import admin_required
 from main.forms import LoginForm, AddUserForm, AddTriebwagenForm, AddPersonenwaggonForm, EditPasswordForm
 from main.models import User, Triebwagen, Personenwaggon, Zug, Maintenance
-from main.util import calculate_sitze, calculate_waggons, calculate_maxgewicht, get_spurweite
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -55,10 +46,6 @@ def home():
             Triebwagen.fahrgestellnummer == request.form.get('triebwagen')).delete()
             db.session.commit()
             flash("Deleted Triebwagen: {}".format(request.form.get('triebwagen')))
-        if request.form.get('zug'):
-            db.session.query(Zug).filter(Zug.id==request.form.get('zug')).delete()
-            db.session.commit()
-            flash("Deleted Zug {}".format(request.form.get('zug')))
         return redirect(url_for('home'))
     triebwagen = Triebwagen.query.all()
     personenwaggons = Personenwaggon.query.all()
@@ -66,9 +53,7 @@ def home():
     m = Maintenance.query.filter(Maintenance.emp_association.any(email=current_user.email)).all()
     m_f = [m for m in m if m.datetime.date() >= datetime.now().date()]
     return render_template("home.html", title="Flotte- Home", triebwaegen=triebwagen, personenwaggons=personenwaggons, zuege=zuege,
-                           triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query, calculate_sitze=calculate_sitze,
-                           calculate_waggons=calculate_waggons, calculate_maxgewicht=calculate_maxgewicht, get_spurweite=get_spurweite,
-                           wartungen=m_f)
+                           wartungen=m_f, round=round)
 
 @app.route('/user', methods=['GET', 'POST'])
 @login_required
@@ -180,6 +165,16 @@ def train():
         db.session.commit()
     return redirect(url_for('home'))
 
+
+@app.route("/api/admin/personenwaggon/<fahrgestellnummer>", methods=["POST"])
+@login_required
+@admin_required
+def delete_personenwaggon(fahrgestellnummer):
+    db.session.query(Personenwaggon).filter(
+    Personenwaggon.fahrgestellnummer == fahrgestellnummer).delete()
+    db.session.commit()
+    redirect(url_for('home'))
+
 @app.route("/train/<id>")
 @login_required
 @admin_required
@@ -188,9 +183,8 @@ def edit_train(id):
     triebwagen = Triebwagen.query.get(zug.triebwagen)
     waggons= Personenwaggon.query.filter_by(spurweite=triebwagen.spurweite)
     own_waggons = Personenwaggon.query.filter_by(zug_id=id)
-    return render_template("edit-train.html", waggons=waggons, zug=zug, own_waggons=own_waggons, calculate_sitze=calculate_sitze,
-                           calculate_waggons=calculate_waggons, calculate_maxgewicht=calculate_maxgewicht, get_spurweite=get_spurweite,
-                           triebwagen_query=Triebwagen.query, personenwaggon_query=Personenwaggon.query)
+    return render_template("edit-train.html", waggons=waggons, zug=zug, own_waggons=own_waggons,
+                            round=round)
 
 
 @app.route("/train/<id>/wartung", methods=["GET", "POST"])
@@ -207,8 +201,8 @@ def wartung(id):
     emps = User.query.filter_by(is_admin=False)
     m = Maintenance.query.filter_by(zug_id=id).all()
     m_f = [m for m in m if m.datetime.date()>=datetime.now().date()]
-    return render_template("wartung.html", zug=zug, emps=emps, maintenances=m, User=User,
-                           Maintenance=Maintenance, len=len)
+    return render_template("wartung.html", zug=zug, emps=emps, maintenances=m_f, User=User,
+                           Maintenance=Maintenance, len=len, round=round)
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
@@ -295,6 +289,13 @@ def edit_train_name(id):
 def delete_train(id):
     db.session.query(Zug).filter(
         Zug.id == id).delete()
+    p_ws = Personenwaggon.query.filter_by(zug_id=id)
+    for p_w in p_ws:
+        p_w.zug_id=None
+    t_ws = Triebwagen.query.filter_by(zug_id=id)
+    for t_w in t_ws:
+        t_w.zug_id=None
+    db.session.query(Maintenance).filter(Maintenance.zug_id == id).delete()
     db.session.commit()
     flash("Zug {} deleted".format(id))
     return redirect(url_for('home'))
