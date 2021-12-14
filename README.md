@@ -6,8 +6,8 @@ Der derzeitige Head des Repositorys befindet sich im branch release/docker.
 
 Zur einfachen Installation der Applikation als Docker Container:
 
-$ docker clone https://github.com/PR-DKE/flotten-informationssystem
+$ git clone https://github.com/PR-DKE/flotten-informationssystem
 
-$ docker checkout release/docker
+$ git checkout release/docker
 
 Die weiteren Kommandos zum erstellen des Docker-Images und starten des Containers finden sich unter readme.txt im release/docker branch.
