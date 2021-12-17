@@ -34,12 +34,12 @@
         <tr>
             <td>{{zug.id}}</td>
             <td>{{zug.name}}</td>
-            <td>{{get_spurweite(zug.id)}}</td>
-            <td>{{triebwagen_query.get(zug.triebwagen).zugkraft}}</td>
-            <td>{{triebwagen_query.get(zug.triebwagen).zugkraft - calculate_maxgewicht(zug.id)}}</td>
-            <td>{{calculate_maxgewicht(zug.id)}}</td>
-            <td> {{calculate_waggons(zug.id)}}</td>
-            <td>{{ calculate_sitze(zug.id) }}</td>
+            <td>{{zug.get_spurweite()}}</td>
+            <td>{{ round(zug.get_zugkraft(), 2)}}</td>
+            <td>{{ round(zug.get_zugkraft() - zug.calculate_max_weight(),2)}}</td>
+            <td>{{ round(zug.calculate_max_weight(),2)}}</td>
+            <td> {{zug.calculate_waggon_number()}}</td>
+            <td>{{ zug.calculate_seat_number() }}</td>
         </tr>
         </tbody>
     </table>
@@ -63,7 +63,7 @@
     <tr>
         <td>{{waggon.fahrgestellnummer}}</td>
         <td>{{waggon.spurweite}}</td>
-        <td>{{waggon.maxGewicht}}</td>
+        <td>{{round(waggon.maxGewicht,2)}}</td>
         <td>{{waggon.sitzanzahl}}</td>
         <td>
             <form action="{{ url_for('add_waggon_to_train', id=zug.id, fahrgestellnummer=waggon.fahrgestellnummer) }}" method="POST">
@@ -92,7 +92,7 @@
         <tr>
             <td>{{waggon.fahrgestellnummer}}</td>
             <td>{{waggon.spurweite}}</td>
-            <td>{{waggon.maxGewicht}}</td>
+            <td>{{round(waggon.maxGewicht,2)}}</td>
             <td>{{waggon.sitzanzahl}}</td>
             <td>
                 <form action="{{ url_for('remove_waggon_from_train', id=zug.id, fahrgestellnummer=waggon.fahrgestellnummer) }}" method="POST">

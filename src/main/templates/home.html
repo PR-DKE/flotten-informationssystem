@@ -52,11 +52,11 @@
         <tr>
             <td>{{zug.id}}</td>
             <td>{{zug.name}}</td>
-            <td>{{get_spurweite(zug.id)}}</td>
-            <td>{{triebwagen_query.get(zug.triebwagen).zugkraft}}</td>
-            <td>{{calculate_maxgewicht(zug.id)}}</td>
-            <td> {{calculate_waggons(zug.id)}}</td>
-            <td>{{ calculate_sitze(zug.id) }}</td>
+            <td>{{zug.get_spurweite()}}</td>
+            <td>{{round(zug.get_zugkraft(), 2)}}</td>
+            <td>{{ round(zug.calculate_max_weight(),2)}}</td>
+            <td> {{ zug.calculate_waggon_number() }}</td>
+            <td>{{ zug.calculate_seat_number() }}</td>
             {% if current_user.is_admin %}
             <td>
                 <div class="btn-group" id="openItems.{{zug.id}}">
@@ -107,7 +107,7 @@
         <tr>
             <td>{{ triebwagen.fahrgestellnummer }}</td>
             <td>{{ triebwagen.spurweite }}</td>
-            <td>{{ triebwagen.zugkraft }}</td>
+            <td>{{ round(triebwagen.zugkraft, 2) }}</td>
             {% if triebwagen.zug_id == none %}
             <td>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
@@ -122,7 +122,7 @@
             <td>
                 <form action="{{ url_for('home') }}" method="POST">
                     <input id="triebwagen" name="triebwagen" type="hidden" value="{{triebwagen.fahrgestellnummer}}">
-                    <button type="submit" class="btn btn-secondary btn-sm"> Delete </button>
+                    <input type="submit" class="btn btn-secondary btn-sm" value="Delete" formaction="{{url_for('home')}}">
                 </form>
             </td>
             {% endif %}
@@ -167,7 +167,7 @@
         <tr>
             <td>{{ personenwaggon.fahrgestellnummer }}</td>
             <td>{{ personenwaggon.spurweite }}</td>
-            <td>{{ personenwaggon.maxGewicht }}</td>
+            <td>{{ round(personenwaggon.maxGewicht,2) }}</td>
             <td>{{ personenwaggon.sitzanzahl }}</td>
             {% if personenwaggon.zug_id == none %}
             <td>
@@ -181,10 +181,12 @@
                 <input type="checkbox" name="pw{{personenwaggon.fahrgestellnummer}}" value={{personenwaggon.fahrgestellnummer}}>
             </td>
             <td>
-                <form action="{{ url_for('home') }}" method="POST">
-                <input id="personenwaggon" name="personenwaggon" type="hidden" value="{{personenwaggon.fahrgestellnummer}}">
-                <button class="btn btn-secondary" type="submit"> Delete </button>
-            </form>
+                <div>
+                    <form action="{{ url_for('home') }}" method="POST">
+                        <input id="personenwaggon" name="personenwaggon" type="hidden" value="{{personenwaggon.fahrgestellnummer}}">
+                        <input type="submit" class="btn btn-secondary btn-sm" value="Delete" formaction="{{url_for('home')}}">
+                    </form>
+                </div>
             </td>
             {% endif %}
             {% else %}

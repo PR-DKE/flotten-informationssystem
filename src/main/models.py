@@ -62,6 +62,33 @@ class Zug(db.Model):
     triebwagen = db.Column(db.String, db.ForeignKey('triebwagen.fahrgestellnummer'))
     personenwaggons = db.relationship("Personenwaggon", backref="zug")
 
+    def calculate_max_weight(self):
+        summe = 0
+        waggons = Personenwaggon.query.filter_by(zug_id=self.id)
+        for waggon in waggons:
+            summe = summe + waggon.maxGewicht
+        return summe
+
+    def get_spurweite(self):
+        return Triebwagen.query.get(self.triebwagen).spurweite
+
+    def get_zugkraft(self):
+        return Triebwagen.query.get(self.triebwagen).zugkraft
+
+    def calculate_seat_number(self):
+        summe = 0
+        waggons = Personenwaggon.query.filter_by(zug_id=self.id)
+        for waggon in waggons:
+            summe = summe + waggon.sitzanzahl
+        return summe
+
+    def calculate_waggon_number(self):
+        summe = 0
+        waggons = Personenwaggon.query.filter_by(zug_id=self.id)
+        for waggon in waggons:
+            summe += 1
+        return summe
+
     def to_json(self):
         triebwagen = Triebwagen.query.get(self.triebwagen)
         waggons = Personenwaggon.query.filter_by(zug_id=self.id)
