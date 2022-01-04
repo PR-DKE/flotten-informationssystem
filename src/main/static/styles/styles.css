@@ -14,3 +14,19 @@
   margin-left: 30px;
   margin-right: 30px;
 }
+
+.icon-input-btn{
+        display: inline-block;
+        position: relative;
+    }
+
+.icon-input-btn input[type="submit"]{
+        padding-left: 2em;
+    }
+.icon-input-btn .fa{
+        display: inline-block;
+        position: absolute;
+        left: 0.65em;
+        top: 25%;
+        color: white;
+    }

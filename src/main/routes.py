@@ -227,13 +227,12 @@ def scheduleMaintenance(id):
                                     description=form.get('description'),
                                   zug_id=id
                                   )
-        db.session.add(maintenance)
-        db.session.commit()
         for field in form.items():
             if field.__getitem__(0).__contains__('emp.'):
                 mail = field.__getitem__(1)
                 u = User.query.filter_by(email=mail).first()
                 maintenance.emp_association.append(u)
+        db.session.add(maintenance)
         db.session.commit()
         flash("Scheduled")
     return redirect(url_for("wartung", id=id))

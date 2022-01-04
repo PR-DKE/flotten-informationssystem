@@ -113,7 +113,7 @@ class Zug(db.Model):
 
 
 
-maintenance_employee_table = db.Table('maintenance_employee_association',
+maintenance_employee_association = db.Table('maintenance_employee_association',
                                       db.Column('maintenance_id', db.ForeignKey('maintenance.id', ondelete="CASCADE")),
                                       db.Column('employee_id', db.ForeignKey('users.email', ondelete="SET NULL")))
 
@@ -124,7 +124,7 @@ class Maintenance(db.Model):
     duration = db.Column(db.DECIMAL, nullable=True)
     description = db.Column(db.String, nullable=True)
     emp_association = db.relationship("User",
-                                      secondary=maintenance_employee_table)
+                                      secondary=maintenance_employee_association)
 
     def to_json_light(self):
         json_m = {
