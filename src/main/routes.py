@@ -1,4 +1,6 @@
 from datetime import datetime
+
+import sqlalchemy
 from dateutil.parser import isoparse
 from flask import render_template, redirect, flash, url_for, request, abort, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
@@ -193,6 +195,8 @@ def edit_train(id):
 def wartung(id):
     if request.method == "POST":
         m_id = request.form.get('wartung')
+        query = "DELETE FROM maintenance_employee_association WHERE maintenance_id = "+m_id
+        db.session.execute(sqlalchemy.text(query))
         db.session.query(Maintenance).filter(Maintenance.id==m_id).delete()
         db.session.commit()
         flash("Wartung deleted")
@@ -227,14 +231,19 @@ def scheduleMaintenance(id):
                                     description=form.get('description'),
                                   zug_id=id
                                   )
+        i = 0
         for field in form.items():
             if field.__getitem__(0).__contains__('emp.'):
                 mail = field.__getitem__(1)
                 u = User.query.filter_by(email=mail).first()
                 maintenance.emp_association.append(u)
-        db.session.add(maintenance)
-        db.session.commit()
-        flash("Scheduled")
+                i=i+1
+        if i == 0:
+            flash("Select at least one employee!")
+        else:
+            db.session.add(maintenance)
+            db.session.commit()
+            flash("Scheduled Maintenance")
     return redirect(url_for("wartung", id=id))
 
 @app.route("/api/admin/train/<id>/waggon/<fahrgestellnummer>", methods=["POST"])
@@ -307,7 +316,10 @@ def get_trains():
 @app.route("/api/train/<id>")
 def get_train(id):
     train = Zug.query.get(id)
-    return jsonify(train.to_json())
+    if train:
+        return jsonify(train.to_json())
+    else:
+        return "No such train"
 
 @app.route("/api/train/<id>/maintenance")
 def get_maintenances_for_train(id):
