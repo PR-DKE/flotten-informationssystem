@@ -36,17 +36,17 @@
     </div>
   </nav>
 
-  <div class="container">
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert alert-primary d-flex align-items-center" role="alert">
     <ul>
       {% for message in messages %}
       <li>{{ message }}</li>
       {% endfor %}
     </ul>
-    {% endif %}
-    {% endwith %}
-  </div>
+    </div>
+  {% endif %}
+  {% endwith %}
   <div style="margin-top: 30px;">
     {% block content %}
     {% endblock %}

@@ -226,24 +226,30 @@ def settings():
 def scheduleMaintenance(id):
     if request.method=='POST':
         form = request.form
-        maintenance = Maintenance(datetime= isoparse(form.get('date')),
+        if not form.get('date'):
+            flash("Please select a date")
+        elif not form.get('duration'):
+            flash("Please define the expected duration")
+        else:
+
+            maintenance = Maintenance(datetime= isoparse(form.get('date')),
                                     duration=form.get('duration'),
                                     description=form.get('description'),
                                   zug_id=id
                                   )
-        i = 0
-        for field in form.items():
-            if field.__getitem__(0).__contains__('emp.'):
-                mail = field.__getitem__(1)
-                u = User.query.filter_by(email=mail).first()
-                maintenance.emp_association.append(u)
-                i=i+1
-        if i == 0:
-            flash("Select at least one employee!")
-        else:
-            db.session.add(maintenance)
-            db.session.commit()
-            flash("Scheduled Maintenance")
+            i = 0
+            for field in form.items():
+                if field.__getitem__(0).__contains__('emp.'):
+                    mail = field.__getitem__(1)
+                    u = User.query.filter_by(email=mail).first()
+                    maintenance.emp_association.append(u)
+                    i=i+1
+            if i == 0:
+                flash("Select at least one employee!")
+            else:
+                db.session.add(maintenance)
+                db.session.commit()
+                flash("Scheduled Maintenance")
     return redirect(url_for("wartung", id=id))
 
 @app.route("/api/admin/train/<id>/waggon/<fahrgestellnummer>", methods=["POST"])

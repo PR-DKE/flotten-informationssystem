@@ -1,21 +1,19 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-
-
-
 {% block content %}
 {{super()}}
-<h1 style="text-align: center">Add Waggon</h1>
-<br>
-<div>
-    <div class="personal-form auto">
-        <h1>Triebwagen</h1>
-        {{ wtf.quick_form(form)}}
-    </div>
-    <br>
-    <div class="personal-form auto">
-        <h1>Personenwaggon</h1>
-        {{ wtf.quick_form(form2)}}
-    </div>
+<div class="float-container">
+  <div class="float-child">
+      <div class="personal-form auto">
+          <h1>Triebwagen</h1>
+          {{ wtf.quick_form(form)}}
+      </div>
+  </div>
+  <div class="float-child">
+      <div class="personal-form auto">
+          <h1>Personenwaggon</h1>
+          {{ wtf.quick_form(form2)}}
+      </div>
+  </div>
 </div>
 {% endblock %}
