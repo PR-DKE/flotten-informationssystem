@@ -7,9 +7,9 @@ Flask-Applikation zur Verwaltung von Zügen, Waggons, Wartungen und Mitarbeitern
 $ git clone https://github.com/PR-DKE/flotten-informationssystem/
 ```
 
-## Installation der Applikation als Docker Container:
+## Installation der Applikation als Docker Container[^1]:
 
-1. **Create Image** [^1]
+1. **Create Image** [^2]
 
 ```
 $ cd <path-to-root-folder>
@@ -29,7 +29,8 @@ email: **admin@jku-linien.at**
 
 pwd: **admin**
 
-[^1]: Auf Windows Systemen kann es zu Problemen mit der Script-Datei kommen **ANLEITUNG ERGÄNZEN!**.
+[^1]: Die Applikation läuft als Container eventuell etwas langsam. Die lokale Ausführung garantiert ein besseres Erlebnis.
+[^2]: Auf Windows Systemen kann es zu Problemen mit der Script-Datei kommen **ANLEITUNG ERGÄNZEN!**.
 
 ## Ausführen der Applikation lokal:
 
