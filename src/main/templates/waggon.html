@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+{{super()}}
+{% if waggon %}
+<div class="personal-form auto">
+    {% if waggon.sitzanzahl %}
+    <h1>Edit Personenwaggon {{waggon.fahrgestellnummer}}</h1>
+    {% else %}
+    <h1>Edit Triebwagen {{waggon.fahrgestellnummer}}</h1>
+    {% endif %}
+    <br>
+    <form action="{{url_for('edit_waggon', id=waggon.fahrgestellnummer)}}" method="post">
+        <div class="mb-3">
+            <label for="fahrgestellnummer1" class="form-label">Fahrgestellnummer</label>
+            <input disabled name="fahrgestellnummer1" type="text" class="form-control" id="fahrgestellnummer1" value="{{waggon.fahrgestellnummer}}" aria-describedby="fahrgestellnummer1Help">
+            <div id="fahrgestellnummer1Help" class="form-text">Fahrgestellnummer cannot be changed</div>
+        </div>
+        <label for="spurweite1" class="form-label">Spurweite</label>
+        <div class="mb-3" id="spurweite1">
+            <div class="form-check">
+                {% if waggon.spurweite == 1435 %}
+                <input class="form-check-input" type="radio" value="1435" name="spurweite" id="flexRadioDefault1" checked>
+                 <label class="form-check-label" for="flexRadioDefault1">
+                    1435
+                </label>
+                {% else %}
+                <input class="form-check-input" type="radio" value="1435" name="spurweite" id="flexRadioDefault1.1">
+                 <label class="form-check-label" for="flexRadioDefault1.1">
+                    1435
+                </label>
+                {% endif %}
+            </div>
+            <div class="form-check">
+                {% if waggon.spurweite == 1000 %}
+                <input class="form-check-input" type="radio" value="1000" name="spurweite" id="flexRadioDefault2" checked>
+                <label class="form-check-label" for="flexRadioDefault2">
+                    1000
+                </label>
+                {% else %}
+                <input class="form-check-input" type="radio" value="1000" name="spurweite" id="flexRadioDefault2.1">
+                <label class="form-check-label" for="flexRadioDefault2.1">
+                    1000
+                </label>
+                {% endif %}
+
+            </div>
+        </div>
+        {% if waggon.sitzanzahl %}
+        <input type="hidden" name="type" value="pwg">
+        <div class="mb-3">
+            <label for="sitzanzahl" class="form-label">Sitzanzahl</label>
+            <input type="number" name="sitzanzahl" class="form-control" id="sitzanzahl" value="{{waggon.sitzanzahl}}">
+        </div>
+        <div class="mb-3">
+            <label for="MaximalGewicht" class="form-label">Maximal-Gewicht</label>
+            <input type="number" step="any" name="maxgewicht" class="form-control" id="MaximalGewicht" value="{{round(waggon.maxGewicht, 2)}}">
+        </div>
+        {% else %}
+        <div class="mb-3">
+            <label for="zugkraft" class="form-label">Zugkraft</label>
+            <input type="number" step="any" name="zugkraft" class="form-control" id="zugkraft" value="{{round(waggon.zugkraft, 2)}}">
+        </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Submit Changes</button>
+    </form>
+</div>
+{% else %}
+{% if invalid_argument %}
+<div class="alert alert-warning" role="alert">
+    Cannot update a waggon that is still attached to a train!
+</div>
+{% else %}
+<div class="alert alert-warning" role="alert">
+ Waggon not found!
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+
+{% block scripts %}
+{{super()}}
+{% endblock %}
+

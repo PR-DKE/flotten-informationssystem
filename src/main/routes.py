@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import flask
 import sqlalchemy
 from dateutil.parser import isoparse
 from flask import render_template, redirect, flash, url_for, request, abort, jsonify
@@ -175,6 +176,7 @@ def delete_personenwaggon(fahrgestellnummer):
     db.session.query(Personenwaggon).filter(
     Personenwaggon.fahrgestellnummer == fahrgestellnummer).delete()
     db.session.commit()
+    flash('Deleted personenwaggon {}'.format(fahrgestellnummer))
     redirect(url_for('home'))
 
 @app.route("/train/<id>")
@@ -182,9 +184,13 @@ def delete_personenwaggon(fahrgestellnummer):
 @admin_required
 def edit_train(id):
     zug = Zug.query.get(id)
-    triebwagen = Triebwagen.query.get(zug.triebwagen)
-    waggons= Personenwaggon.query.filter_by(spurweite=triebwagen.spurweite)
-    own_waggons = Personenwaggon.query.filter_by(zug_id=id)
+    if zug:
+        triebwagen = Triebwagen.query.get(zug.triebwagen)
+        waggons= Personenwaggon.query.filter_by(spurweite=triebwagen.spurweite)
+        own_waggons = Personenwaggon.query.filter_by(zug_id=id)
+    else:
+        flash("No train found with id {}".format(id))
+        flask.abort(404)
     return render_template("edit-train.html", waggons=waggons, zug=zug, own_waggons=own_waggons,
                             round=round)
 
@@ -202,6 +208,9 @@ def wartung(id):
         flash("Wartung deleted")
         return redirect(url_for('wartung', id=id))
     zug = Zug.query.get(id)
+    if not zug:
+        flash("No train found with id {}".format(id))
+        flask.abort(404)
     emps = User.query.filter_by(is_admin=False)
     m = Maintenance.query.filter_by(zug_id=id).all()
     m_f = [m for m in m if m.datetime.date()>=datetime.now().date()]
@@ -217,8 +226,69 @@ def settings():
         u.password = form.password.data
         db.session.commit()
         flash("Password has been changed")
-    return render_template('settings.html', form=form)
+    return render_template('settings.html', form=form, title="Settins")
 
+
+
+@app.route('/waggon/<id>', methods=['POST', 'GET'])
+@login_required
+@admin_required
+def waggon(id):
+    waggon = Triebwagen.query.get(id)
+    if not waggon:
+        waggon = Personenwaggon.query.get(id)
+    invalid_argument=False
+    if waggon and waggon.zug_id:
+        waggon = None
+        invalid_argument=True
+    return render_template('waggon.html', waggon=waggon, title="Waggon", round=round, invalid_argument=invalid_argument)
+
+
+@app.route('/api/waggon/<id>', methods=['POST'])
+@login_required
+@admin_required
+def edit_waggon(id):
+    form = request.form
+    type=form.get('type')
+    spurweite=int(form.get('spurweite'))
+    error=False
+
+    if type == 'pwg':
+        waggon = Personenwaggon.query.get(id)
+        if waggon:
+            if not form.get('sitzanzahl'):
+                flash('Please provide the number of seats')
+                error=True
+            elif not form.get('maxgewicht'):
+                flash('Please provide the maximal weight')
+                error=True
+            else:
+                waggon.sitzanzahl=form.get('sitzanzahl')
+                waggon.maxGewicht=form.get('maxgewicht')
+        else:
+            error=True
+    else:
+        waggon = Triebwagen.query.get(id)
+        if waggon:
+            if not form.get('zugkraft'):
+                flash('Please provide the zugkraft')
+                error=True
+            else:
+                waggon.zugkraft=form.get('zugkraft')
+        else:
+            error=True
+    if waggon:
+        if waggon.zug_id:
+            error=True
+            flash('Cannot update waggon that belongs to a train')
+        else:
+            waggon.spurweite=spurweite
+    if not error:
+        db.session.commit()
+        flash('Updated Personenwaggon')
+    else:
+        flash('Error, could not execute update')
+    return redirect(url_for('waggon', id=id))
 
 @app.route("/api/admin/train/<id>/wartung", methods=["POST"])
 @login_required
@@ -231,7 +301,6 @@ def scheduleMaintenance(id):
         elif not form.get('duration'):
             flash("Please define the expected duration")
         else:
-
             maintenance = Maintenance(datetime= isoparse(form.get('date')),
                                     duration=form.get('duration'),
                                     description=form.get('description'),
@@ -257,6 +326,9 @@ def scheduleMaintenance(id):
 @admin_required
 def add_waggon_to_train(id, fahrgestellnummer):
     zug = Zug.query.get(id)
+    if not zug:
+        flash("No train found with id "+id)
+        flask.abort(404)
     waggon = Personenwaggon.query.get(fahrgestellnummer)
     triebwagen = Triebwagen.query.get(zug.triebwagen)
 
@@ -282,6 +354,9 @@ def add_waggon_to_train(id, fahrgestellnummer):
 @admin_required
 def remove_waggon_from_train(id, fahrgestellnummer):
     waggon = Personenwaggon.query.get(fahrgestellnummer)
+    if not waggon:
+        flash("No waggon found with id {}".format(id))
+        abort(404)
     waggon.zug_id = None
     db.session.commit()
     flash("Personenwaggon {} removed from train {}".format(fahrgestellnummer, id))
@@ -293,6 +368,9 @@ def remove_waggon_from_train(id, fahrgestellnummer):
 def edit_train_name(id):
     form = request.form
     train = Zug.query.get(id)
+    if not train:
+        flash("No train found with id {}".format(id))
+        abort(404)
     train.name = request.form.get('name')
     db.session.commit()
     return redirect(url_for('edit_train', id=id))

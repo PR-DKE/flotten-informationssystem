@@ -131,11 +131,10 @@
             </td>
             <td>
                 <div>
-                    <form action="{{ url_for('home') }}" method="POST">
-                        <input id="twg_to_edit" name="twg_to_edit" type="hidden" value="{{triebwagen.fahrgestellnummer}}">
+                    <form action="{{ url_for('waggon', id=triebwagen.fahrgestellnummer) }}" method="POST">
                         <span class="icon-input-btn">
                             <i class="fa fa-edit"></i>
-                            <input type="submit" class="btn btn-primary btn-sm" value="" formaction="{{url_for('home')}}">
+                            <input type="submit" class="btn btn-primary btn-sm" value="" formaction="{{url_for('waggon', id=triebwagen.fahrgestellnummer)}}">
                         </span>
                     </form>
                 </div>
@@ -210,11 +209,11 @@
             </td>
             <td>
                 <div>
-                    <form action="{{ url_for('home') }}" method="POST">
+                    <form action="{{ url_for('waggon', id=personenwaggon.fahrgestellnummer) }}" method="POST">
                         <input id="pwg_to_edit" name="pwg_to_edit" type="hidden" value="{{personenwaggon.fahrgestellnummer}}">
                         <span class="icon-input-btn">
                             <i class="fa fa-edit"></i>
-                            <input type="submit" class="btn btn-primary btn-sm" value="" formaction="{{url_for('home')}}">
+                            <input type="submit" class="btn btn-primary btn-sm" value="" formaction="{{url_for('waggon', id=personenwaggon.fahrgestellnummer)}}">
                         </span>
                     </form>
                 </div>

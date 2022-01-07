@@ -59,7 +59,7 @@ class Personenwaggon(Waggon):
 class Zug(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, default=null)
-    triebwagen = db.Column(db.String, db.ForeignKey('triebwagen.fahrgestellnummer'))
+    triebwagen = db.Column(db.String, db.ForeignKey('triebwagen.fahrgestellnummer', ondelete="CASCADE"))
     personenwaggons = db.relationship("Personenwaggon", backref="zug")
 
     def calculate_max_weight(self):
