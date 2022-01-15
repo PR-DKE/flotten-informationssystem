@@ -11,7 +11,7 @@
             <th>Zug</th>
             <th>Datum</th>
             <th>Uhrzeit</th>
-            <th>Dauer</th>
+            <th>Dauer (h)</th>
             <th>Infos</th>
         </tr>
         </thead>
@@ -21,7 +21,7 @@
             <td>{{wartung.zug_id}}</td>
             <td>{{wartung.datetime.date()}}</td>
             <td>{{wartung.datetime.time()}}</td>
-            <td>{{wartung.duration}}</td>
+            <td>{{round(wartung.duration,2 )}}</td>
             <td>{{wartung.description}}</td>
         </tr>
         {% endfor %}

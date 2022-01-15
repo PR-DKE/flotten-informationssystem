@@ -29,7 +29,7 @@ class AddUserForm(FlaskForm):
 
 class AddTriebwagenForm(FlaskForm):
     spurweite = RadioField('Spurweite (mm)', choices=[('normalspur','1435'),('schmalspur','1000')], default='normalspur')
-    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired()])
+    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired(), Regexp('^[A-Za-z0-9]*$', message="Field may only contain numbers and letters")])
     zugkraft = DecimalField('Zugkraft (t)', validators=[DataRequired()])
     submit = SubmitField('Add Waggon')
 
@@ -41,7 +41,7 @@ class AddTriebwagenForm(FlaskForm):
 class AddPersonenwaggonForm(FlaskForm):
     spurweite = RadioField('Spurweite (mm)', choices=[('normalspur', '1435'), ('schmalspur', '1000')],
                            default='normalspur')
-    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired()])
+    fahrgestellnummer = StringField('Fahrgestellnummer', validators=[DataRequired(), Regexp('^[A-Za-z0-9]*$', message="Field may only contain numbers and letters")])
     sitzanzahl = IntegerField('Sitzplätze', validators=[DataRequired()])
     maxGewicht = DecimalField('Maximal-Gewicht (t)', validators=[DataRequired()])
     submi = SubmitField('Add Waggon')
@@ -50,7 +50,6 @@ class AddPersonenwaggonForm(FlaskForm):
         if Triebwagen.query.filter_by(fahrgestellnummer=field.data).first() \
                 or Personenwaggon.query.filter_by(fahrgestellnummer=field.data).first():
             raise ValidationError('Fahrgestellnummer already in use')
-
 
 class EditPasswordForm(FlaskForm):
     old_password = PasswordField('Old Password', validators=[DataRequired()])

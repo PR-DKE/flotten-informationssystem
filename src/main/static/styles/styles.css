@@ -23,7 +23,10 @@
     float: left;
     padding: 20px;
 }
-
+.btn-default{
+    margin-top: 10px;
+    background-color: lightgray;
+}
 .icon-input-btn{
         display: inline-block;
         position: relative;

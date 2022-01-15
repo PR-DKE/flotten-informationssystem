@@ -192,7 +192,7 @@ def edit_train(id):
         flash("No train found with id {}".format(id))
         flask.abort(404)
     return render_template("edit-train.html", waggons=waggons, zug=zug, own_waggons=own_waggons,
-                            round=round)
+                            round=round, title="Edit Train "+id)
 
 
 @app.route("/train/<id>/wartung", methods=["GET", "POST"])
@@ -201,8 +201,6 @@ def edit_train(id):
 def wartung(id):
     if request.method == "POST":
         m_id = request.form.get('wartung')
-        query = "DELETE FROM maintenance_employee_association WHERE maintenance_id = "+m_id
-        db.session.execute(sqlalchemy.text(query))
         db.session.query(Maintenance).filter(Maintenance.id==m_id).delete()
         db.session.commit()
         flash("Wartung deleted")
@@ -215,7 +213,7 @@ def wartung(id):
     m = Maintenance.query.filter_by(zug_id=id).all()
     m_f = [m for m in m if m.datetime.date()>=datetime.now().date()]
     return render_template("wartung.html", zug=zug, emps=emps, maintenances=m_f, User=User,
-                           Maintenance=Maintenance, len=len, round=round)
+                           Maintenance=Maintenance, len=len, round=round, title="Schedule Maintenance for "+id)
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
@@ -226,7 +224,7 @@ def settings():
         u.password = form.password.data
         db.session.commit()
         flash("Password has been changed")
-    return render_template('settings.html', form=form, title="Settins")
+    return render_template('settings.html', form=form, title="Settings")
 
 
 
@@ -241,7 +239,7 @@ def waggon(id):
     if waggon and waggon.zug_id:
         waggon = None
         invalid_argument=True
-    return render_template('waggon.html', waggon=waggon, title="Waggon", round=round, invalid_argument=invalid_argument)
+    return render_template('waggon.html', waggon=waggon, title="Edit Waggon "+id, round=round, invalid_argument=invalid_argument)
 
 
 @app.route('/api/waggon/<id>', methods=['POST'])
@@ -381,13 +379,6 @@ def edit_train_name(id):
 def delete_train(id):
     db.session.query(Zug).filter(
         Zug.id == id).delete()
-    p_ws = Personenwaggon.query.filter_by(zug_id=id)
-    for p_w in p_ws:
-        p_w.zug_id=None
-    t_ws = Triebwagen.query.filter_by(zug_id=id)
-    for t_w in t_ws:
-        t_w.zug_id=None
-    db.session.query(Maintenance).filter(Maintenance.zug_id == id).delete()
     db.session.commit()
     flash("Zug {} deleted".format(id))
     return redirect(url_for('home'))
