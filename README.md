@@ -51,4 +51,8 @@ $ EXPORT FLASK_APP = src/flotten.py
 $ flask run
 ```
 
+email: **admin@jku-linien.at**
+
+pwd: **admin**
+
 [Python Umgebung]: /venv
