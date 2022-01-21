@@ -283,7 +283,7 @@ def edit_waggon(id):
             waggon.spurweite=spurweite
     if not error:
         db.session.commit()
-        flash('Updated Personenwaggon')
+        flash('Updated Waggon')
     else:
         flash('Error, could not execute update')
     return redirect(url_for('waggon', id=id))
