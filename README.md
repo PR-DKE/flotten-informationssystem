@@ -35,6 +35,7 @@ pwd: **admin**
 ## Ausführen der Applikation lokal:
 
 Alle benötigten dependencies befinden sich in der virtuellen [Python Umgebung].
+Alternativ kann natürlich eine eigene VENV initialisiert werden, eine Auflistung der benoetigten Packages befindet sich in den [Requirements].
 
 1. **Venv starten**
 ```
@@ -56,3 +57,4 @@ email: **admin@jku-linien.at**
 pwd: **admin**
 
 [Python Umgebung]: /venv
+[Requirements]: /requirements.txt
